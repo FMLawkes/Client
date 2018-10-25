@@ -1,23 +1,34 @@
 import React, { Component } from 'react'
 import { Mutation, Query } from 'react-apollo'
 import gql from 'graphql-tag'
+import { withRouter } from 'next/router'
 
 import Page from '../components/page'
 import Section from '../components/section'
-import api from '../credentials/api'
+import api from '../credentials'
 import formatBytes from '../helpers'
 
-export default class Download extends Component {
+class Download extends Component {
   constructor(props) {
     super(props)
     this.state = {
       email: '',
       isLogin: false,
-      id: ''
+      id: '',
+      loadingDDL: false,
+      errorDDL: false
     }
   }
 
   componentDidMount() {
+    const {
+      query: { id }
+    } = this.props.router
+    const email = window.localStorage.getItem('email')
+    this.setState({
+      id,
+      email
+    })
     this.initClient()
   }
 
@@ -60,40 +71,69 @@ export default class Download extends Component {
         this.setState({
           email
         })
+        window.localStorage.setItem('email', email)
       })
   }
 
-  handleDownload = async params => {
-    console.log(params)
-    const { gapi } = window
-    const {
-      result: { files: folders }
-    } = await gapi.client.drive.files.list({
-      q: "mimeType='image/jpeg'"
-    })
-    let folderId = ''
-    if (!folders.length) {
-      const {
-        result: { id }
-      } = await gapi.client.drive.files.create({
-        resource: {
-          name: 'anifiles',
-          mimeType: 'application/vnd.google-apps.folder',
-          copyRequiresWriterPermission: false
-        }
+  insertFileIntoFolder = async (folderId, fileId) => {
+    try {
+      const { gapi } = window
+      const body = { id: folderId }
+      await gapi.client.drive.parents.insert({
+        fileId,
+        resource: body
       })
-      folderId = id
-    } else folderId = folders[0].id
-    const {
-      result: { downloadUrl }
-    } = await gapi.client.drive.files.copy({
-      fileId: params.gdriveId,
-      fields: 'name, id, downloadUrl',
-      resource: {
-        parents: [folderId]
-      }
-    })
-    console.log(downloadUrl)
+      return null
+    } catch {
+      this.setState({
+        error: true
+      })
+    }
+  }
+
+  handleDownload = async params => {
+    try {
+      const { gapi } = window
+      this.setState({
+        loadingDDL: true
+      })
+      const {
+        result: { items: folders }
+      } = await gapi.client.drive.files.list({
+        q:
+          "mimeType = 'application/vnd.google-apps.folder' and title='anifiles'",
+        fields: 'nextPageToken, items(id, title)'
+      })
+      let folderId = ''
+      if (!folders.length) {
+        const {
+          result: { id }
+        } = await gapi.client.drive.files.insert({
+          resource: {
+            title: 'anifiles',
+            mimeType: 'application/vnd.google-apps.folder',
+            copyRequiresWriterPermission: false
+          }
+        })
+        folderId = id
+      } else folderId = folders[0].id
+      const {
+        result: { downloadUrl, id: fileId }
+      } = await gapi.client.drive.files.copy({
+        fileId: params.gdriveId,
+        fields: 'title, id, downloadUrl'
+      })
+      await this.insertFileIntoFolder(folderId, fileId)
+      const ddl = downloadUrl.slice(0, -8)
+      window.location.href = ddl
+      this.setState({
+        loadingDDL: false
+      })
+    } catch {
+      this.setState({
+        error: true
+      })
+    }
   }
 
   handleSubmit = params => {
@@ -103,8 +143,7 @@ export default class Download extends Component {
   }
 
   render() {
-    const { email } = this.state
-    const id = '5bd18eb43e0880c09295ba1d'
+    const { id, email, loadingDDL } = this.state
     const VIDEO_QUERY = gql`
       query video($id: String) {
         video(id: $id) {
@@ -125,42 +164,49 @@ export default class Download extends Component {
     `
     return (
       <Page title="Download">
-        <Query query={VIDEO_QUERY} variables={{ id }}>
-          {({ loading, error, data: { video } }) => {
-            if (loading) return <span>loading....</span>
-            if (error) return <span>Error....</span>
-            return (
-              <Section heading={`Download ${video.filename}`}>
-                <div className="file-info">
-                  <table className="table table-striped table-sm">
-                    <tbody>
-                      <tr>
-                        <th scope="row">Size</th>
-                        <td>{formatBytes(video.size)}</td>
-                      </tr>
-                    </tbody>
-                  </table>
-                </div>
-                <Mutation mutation={DOWNLOAD}>
-                  {download => (
-                    <button
-                      type="submit"
-                      className="btn btn-primary"
-                      id="btn-download"
-                      onClick={e => {
-                        e.preventDefault()
-                        download({ variables: { email, videoId: video._id } })
-                        this.handleSubmit(video)
-                      }}
-                    >
-                      Download
-                    </button>
-                  )}
-                </Mutation>
-              </Section>
-            )
-          }}
-        </Query>
+        {id !== '' ? (
+          <Query query={VIDEO_QUERY} variables={{ id }}>
+            {({ loading, error, data }) => {
+              if (loading) return <span>loading....</span>
+              if (error) return <span>Error....</span>
+              if (data && !data.video) return <span>File Not Found....</span>
+              const { video } = data
+              return (
+                <Section heading={`Download ${video.filename}`}>
+                  <div className="file-info">
+                    <table className="table table-striped table-sm">
+                      <tbody>
+                        <tr>
+                          <th scope="row">Size</th>
+                          <td>{formatBytes(video.size)}</td>
+                        </tr>
+                      </tbody>
+                    </table>
+                  </div>
+                  <Mutation mutation={DOWNLOAD}>
+                    {download => (
+                      <button
+                        disabled={loadingDDL ? true : false}
+                        type="submit"
+                        className="btn btn-primary"
+                        id="btn-download"
+                        onClick={e => {
+                          e.preventDefault()
+                          download({ variables: { email, videoId: video._id } })
+                          this.handleSubmit(video)
+                        }}
+                      >
+                        {loadingDDL ? 'Process' : 'Download'}
+                      </button>
+                    )}
+                  </Mutation>
+                </Section>
+              )
+            }}
+          </Query>
+        ) : (
+          <span>loading....</span>
+        )}
         <style jsx>{`
           form {
             width: fit-content;
@@ -171,3 +217,5 @@ export default class Download extends Component {
     )
   }
 }
+
+export default withRouter(Download)

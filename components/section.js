@@ -11,7 +11,7 @@ const Section = ({ heading, children }) => (
       section {
         display: flex;
         align-items: center;
-        justify-content: center;
+        text-align: center;
         flex-direction: column;
       }
     `}</style>

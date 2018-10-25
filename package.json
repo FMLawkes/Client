@@ -22,6 +22,7 @@
     "blob": "^0.0.4",
     "cross-fetch": "^2.2.2",
     "dotenv-cli": "^1.4.0",
+    "express": "^4.16.4",
     "googleapis": "^34.0.0",
     "graphql": "^14.0.2",
     "graphql-tag": "^2.9.2",
@@ -44,7 +45,7 @@
   "scripts": {
     "dev": "dotenv next",
     "build": "dotenv next build",
-    "start": "dotenv next start",
+    "start": "NODE_ENV=production node server.js",
     "test": "eslint . && prettier '**/*.{json,yml,md}' -l"
   },
   "eslintConfig": {
@@ -58,6 +59,9 @@
       "require-jsdoc": "off",
       "react/prop-types": "off",
       "no-console": "off"
+    },
+    "env": {
+      "browser": 1
     }
   },
   "prettier": {

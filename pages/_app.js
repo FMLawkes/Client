@@ -14,10 +14,9 @@ const createApolloClient = (cache = {}) =>
     // uri: process.env.API_URI
   })
 
-export default class CustomApp extends App {
+class Main extends App {
   static async getInitialProps({ ctx, router, Component }) {
     const props = {}
-
     if (Component.getInitialProps)
       props.pageProps = await Component.getInitialProps(ctx)
 
@@ -25,7 +24,7 @@ export default class CustomApp extends App {
       const apolloClient = createApolloClient()
       try {
         await getDataFromTree(
-          <CustomApp
+          <Main
             {...props}
             apolloClient={apolloClient}
             router={router}
@@ -58,3 +57,5 @@ export default class CustomApp extends App {
     )
   }
 }
+
+export default Main

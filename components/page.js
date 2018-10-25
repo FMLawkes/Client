@@ -1,6 +1,7 @@
+import React from 'react'
 import Head from 'next/head'
 
-const Page = ({ title, children }) => (
+const Page = ({ children, title }) => (
   <div>
     <Head>
       <title>{title}</title>
@@ -29,8 +30,12 @@ const Page = ({ title, children }) => (
         margin: 2rem;
       }
       .container {
+        height: 100vh;
         border: 1px solid black;
         padding: 1rem;
+        display: flex;
+        align-items: center;
+        justify-content: center;
       }
       .login {
         width: 80%;
