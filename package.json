@@ -16,11 +16,13 @@
     "apollo-client": "^2.4.2",
     "apollo-link": "^1.2.3",
     "apollo-upload-client": "^9.0.0",
+    "axios": "^0.18.0",
     "babel-plugin-graphql-tag": "^1.6.0",
     "babel-plugin-transform-inline-environment-variables": "^0.4.3",
     "blob": "^0.0.4",
     "cross-fetch": "^2.2.2",
     "dotenv-cli": "^1.4.0",
+    "googleapis": "^34.0.0",
     "graphql": "^14.0.2",
     "graphql-tag": "^2.9.2",
     "next": "^7.0.1-canary.0",
@@ -49,9 +51,13 @@
     "extends": [
       "env"
     ],
+    "globals": {
+      "window": true
+    },
     "rules": {
       "require-jsdoc": "off",
-      "react/prop-types": "off"
+      "react/prop-types": "off",
+      "no-console": "off"
     }
   },
   "prettier": {

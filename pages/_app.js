@@ -11,6 +11,7 @@ const createApolloClient = (cache = {}) =>
     ssrMode: typeof window !== 'undefined',
     cache: new InMemoryCache().restore(cache),
     link: createUploadLink({ uri: process.env.API_URI })
+    // uri: process.env.API_URI
   })
 
 export default class CustomApp extends App {

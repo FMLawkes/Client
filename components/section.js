@@ -8,6 +8,12 @@ const Section = ({ heading, children }) => (
         margin-bottom: 0.5em;
         font-size: 120%;
       }
+      section {
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        flex-direction: column;
+      }
     `}</style>
   </section>
 )
