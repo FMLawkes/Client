@@ -135,17 +135,21 @@ class Download extends Component {
         error: { message }
       }
     }) {
-      if (message === 'The user has exceeded their Drive storage quota')
-        swal(
-          'Disk Google Drive anda sudah penuh!',
-          'Silakan hapus beberapa file agar bisa mendownload',
-          'warning'
-        )
-      else swal('Oops!', 'Something went wrong!', 'error')
-      this.setState({
-        loading: false,
-        error: true
-      })
+      this.setState(
+        {
+          loading: false,
+          error: true
+        },
+        () => {
+          if (message === 'The user has exceeded their Drive storage quota')
+            swal(
+              'Disk Google Drive anda sudah penuh!',
+              'Silakan hapus beberapa file agar bisa mendownload',
+              'warning'
+            )
+          else swal('Oops!', 'Something went wrong!', 'error')
+        }
+      )
     }
   }
 
