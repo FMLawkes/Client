@@ -144,7 +144,7 @@ class Download extends Component {
         () => {
           if (message === 'The user has exceeded their Drive storage quota')
             swal(
-              'Disk Google Drive anda sudah penuh!',
+              'Penyimpanan Google Drive anda tidak cukup!',
               'Silakan hapus beberapa file agar bisa mendownload',
               'warning'
             )
@@ -161,7 +161,7 @@ class Download extends Component {
   }
 
   render() {
-    const { id, email, loadingDDL } = this.state
+    const { id, email, loadingDDL, errorDDL } = this.state
     const VIDEO_QUERY = gql`
       query fs3ByShortUrl($shortUrl: String) {
         fs3ByShortUrl(shortUrl: $shortUrl) {
@@ -184,6 +184,10 @@ class Download extends Component {
         }
       }
     `
+    let handleTextButton = 'Download'
+    if (loadingDDL) handleTextButton = 'Processing'
+    else if (errorDDL) handleTextButton = 'Error'
+    else if (!isLogin) handleTextButton = 'Login / Register'
     return (
       <Page title="Download">
         {id !== '' ? (
@@ -219,7 +223,7 @@ class Download extends Component {
                           this.handleSubmit(video)
                         }}
                       >
-                        {loadingDDL ? 'Process' : 'Download'}
+                        {handleTextButton}
                       </button>
                     )}
                   </Mutation>
