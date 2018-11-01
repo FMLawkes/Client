@@ -1,7 +1,8 @@
 import React, { Component } from 'react'
 import { Mutation, Query } from 'react-apollo'
-import gql from 'graphql-tag'
 import { withRouter } from 'next/router'
+import gql from 'graphql-tag'
+import swal from 'sweetalert'
 
 import Page from '../components/page'
 import Section from '../components/section'
@@ -129,9 +130,20 @@ class Download extends Component {
       this.setState({
         loadingDDL: false
       })
-    } catch (error) {
-      console.log(error)
+    } catch ({
+      result: {
+        error: { message }
+      }
+    }) {
+      if (message === 'The user has exceeded their Drive storage quota')
+        swal(
+          'Disk Google Drive anda sudah penuh!',
+          'Silakan hapus beberapa file agar bisa mendownload',
+          'warning'
+        )
+      else swal('Oops!', 'Something went wrong!', 'error')
       this.setState({
+        loading: false,
         error: true
       })
     }
