@@ -1,4 +1,3 @@
-const { createReadStream } = require('fs')
 const express = require('express')
 const next = require('next')
 
@@ -10,10 +9,6 @@ app
   .prepare()
   .then(() => {
     const server = express()
-    server.get('/sw.js', (req, res) => {
-      res.setHeader('content-type', 'text/javascript')
-      createReadStream('./offline/serviceWorker.js').pipe(res)
-    })
 
     server.get('/:id', (req, res) => {
       const actualPage = '/download'

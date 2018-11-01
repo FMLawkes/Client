@@ -10,7 +10,7 @@ const createApolloClient = (cache = {}) =>
   new ApolloClient({
     ssrMode: typeof window !== 'undefined',
     cache: new InMemoryCache().restore(cache),
-    link: createUploadLink({ uri: 'http://139.180.212.106/graphql' })
+    link: createUploadLink({ uri: 'https://api.anifiles.org/graphql' })
     // uri: process.env.API_URI
   })
 
