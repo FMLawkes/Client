@@ -14,6 +14,13 @@ app
       res.setHeader('content-type', 'text/javascript')
       createReadStream('./offline/serviceWorker.js').pipe(res)
     })
+
+    server.get('/:id', (req, res) => {
+      const actualPage = '/download'
+      const queryParams = { id: req.params.id }
+      app.render(req, res, actualPage, queryParams)
+    })
+
     server.get('*', (req, res) => {
       handle(req, res)
     })

@@ -27,6 +27,7 @@
     "graphql": "^14.0.2",
     "graphql-tag": "^2.9.2",
     "next": "^7.0.1-canary.0",
+    "next-routes": "^1.4.2",
     "react": "^16.5.2",
     "react-apollo": "^2.2.1",
     "react-dom": "^16.5.2"
@@ -43,10 +44,9 @@
     "prettier": "^1.14.3"
   },
   "scripts": {
-    "dev": "dotenv next",
-    "build": "dotenv next build",
-    "start": "NODE_ENV=production node server.js",
-    "test": "eslint . && prettier '**/*.{json,yml,md}' -l"
+    "dev": "node server.js",
+    "build": "next build",
+    "start": "NODE_ENV=production node server.js"
   },
   "eslintConfig": {
     "extends": [

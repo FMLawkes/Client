@@ -5,7 +5,7 @@ import { withRouter } from 'next/router'
 
 import Page from '../components/page'
 import Section from '../components/section'
-import api from '../credentials'
+import api from '../credentials/api.js'
 import formatBytes from '../helpers'
 
 class Download extends Component {
@@ -145,18 +145,22 @@ class Download extends Component {
   render() {
     const { id, email, loadingDDL } = this.state
     const VIDEO_QUERY = gql`
-      query video($id: String) {
-        video(id: $id) {
+      query fs3ByShortUrl($shortUrl: String) {
+        fs3ByShortUrl(shortUrl: $shortUrl) {
           _id
           filename
-          gdriveId
-          size
+          video {
+            _id
+            gdriveId
+            filename
+            size
+          }
         }
       }
     `
     const DOWNLOAD = gql`
-      mutation download($email: String, $videoId: String) {
-        download(email: $email, videoId: $videoId) {
+      mutation downloadByVideoId($email: String, $videoId: String) {
+        downloadByVideoId(email: $email, videoId: $videoId) {
           _id
           filename
         }
@@ -165,12 +169,13 @@ class Download extends Component {
     return (
       <Page title="Download">
         {id !== '' ? (
-          <Query query={VIDEO_QUERY} variables={{ id }}>
+          <Query query={VIDEO_QUERY} variables={{ shortUrl: id }}>
             {({ loading, error, data }) => {
               if (loading) return <span>loading....</span>
               if (error) return <span>Error....</span>
-              if (data && !data.video) return <span>File Not Found....</span>
-              const { video } = data
+              const { fs3ByShortUrl } = data
+              if (!fs3ByShortUrl) return <span>File Not Found....</span>
+              const { video } = fs3ByShortUrl
               return (
                 <Section heading={`Download ${video.filename}`}>
                   <div className="file-info">
