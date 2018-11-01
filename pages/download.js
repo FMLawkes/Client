@@ -186,7 +186,7 @@ class Download extends Component {
     `
     let handleTextButton = 'Download'
     if (loadingDDL) handleTextButton = 'Processing'
-    else if (errorDDL) handleTextButton = 'Error'
+    else if (errorDDL) handleTextButton = 'Failed'
     else if (!isLogin) handleTextButton = 'Login / Register'
     return (
       <Page title="Download">
@@ -213,7 +213,7 @@ class Download extends Component {
                   <Mutation mutation={DOWNLOAD}>
                     {download => (
                       <button
-                        disabled={loadingDDL ? true : false}
+                        disabled={loadingDDL || errorDDL ? true : false}
                         type="submit"
                         className="btn btn-primary"
                         id="btn-download"
@@ -227,6 +227,11 @@ class Download extends Component {
                       </button>
                     )}
                   </Mutation>
+                  {errorDDL && (
+                    <div>
+                      <p>Silakan reload untuk mencoba lagi</p>
+                    </div>
+                  )}
                 </Section>
               )
             }}
