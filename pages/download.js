@@ -161,7 +161,7 @@ class Download extends Component {
   }
 
   render() {
-    const { id, email, loadingDDL, errorDDL } = this.state
+    const { id, email, loadingDDL, errorDDL, isLogin } = this.state
     const VIDEO_QUERY = gql`
       query fs3ByShortUrl($shortUrl: String) {
         fs3ByShortUrl(shortUrl: $shortUrl) {
