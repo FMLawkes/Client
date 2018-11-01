@@ -86,8 +86,9 @@ class Download extends Component {
       })
       return null
     } catch {
+      swal('Oops!', 'Something went wrong!', 'error')
       this.setState({
-        error: true
+        errorDDL: true
       })
     }
   }
@@ -137,8 +138,8 @@ class Download extends Component {
     }) {
       this.setState(
         {
-          loading: false,
-          error: true
+          loadingDDL: false,
+          errorDDL: true
         },
         () => {
           if (message === 'The user has exceeded their Drive storage quota')
