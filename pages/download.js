@@ -129,7 +129,8 @@ class Download extends Component {
       this.setState({
         loadingDDL: false
       })
-    } catch {
+    } catch (error) {
+      console.log(error)
       this.setState({
         error: true
       })
