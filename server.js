@@ -10,6 +10,18 @@ app
   .then(() => {
     const server = express()
 
+    server.get('/privacy', (req, res) => {
+      handle(req, res)
+    })
+
+    server.get('/terms', (req, res) => {
+      handle(req, res)
+    })
+
+    server.get('/copyright', (req, res) => {
+      handle(req, res)
+    })
+
     server.get('/:id', (req, res) => {
       const actualPage = '/download'
       const queryParams = { id: req.params.id }

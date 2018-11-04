@@ -1,8 +1,11 @@
-import React from 'react'
+import React, { Fragment } from 'react'
 import Head from 'next/head'
 
+import Navbar from './navbar.jsx'
+import Footer from './footer.jsx'
+
 const Page = ({ children, title }) => (
-  <div>
+  <Fragment>
     <Head>
       <title>{title}</title>
       <meta name="viewport" content="width=device-width, initial-scale=1" />
@@ -19,33 +22,41 @@ const Page = ({ children, title }) => (
         href="https://maxcdn.bootstrapcdn.com/bootstrap/4.0.0/css/bootstrap.min.css"
       />
     </Head>
-    <div className="container">{children}</div>
+    <header>
+      <Navbar />
+    </header>
+    <main role="main" className="container">
+      {children}
+    </main>
+    <Footer />
     <style jsx global>{`
       html {
-        font-family: 'Source Sans Pro', 'Helvetica Neue', Helvetica, Arial,
-          sans-serif;
-        background-color: white;
+        position: relative;
+        min-height: 100%;
       }
       body {
-        margin: 2rem;
+        height: 100%;
+        background: #242a38;
+        font-family: Karbon, Arial, sans-serif;
+        color: #fff;
+        font-size: 15px;
+        margin: 0 auto;
+        text-rendering: optimizeLegibility;
+        margin-bottom: 65px;
       }
-      .container {
-        height: 100vh;
-        border: 1px solid black;
-        padding: 1rem;
-        display: flex;
-        align-items: center;
-        justify-content: center;
+      #__next {
+        width: 100%;
+        height: 100%;
       }
-      .login {
-        width: 80%;
+      main {
+        min-height: 75vh;
       }
     `}</style>
     <script src="https://code.jquery.com/jquery-3.2.1.slim.min.js" />
     <script src="https://cdnjs.cloudflare.com/ajax/libs/popper.js/1.12.9/umd/popper.min.js" />
     <script src="https://maxcdn.bootstrapcdn.com/bootstrap/4.0.0/js/bootstrap.min.js" />
     <script async defer src="https://apis.google.com/js/api.js" />
-  </div>
+  </Fragment>
 )
 
 export default Page

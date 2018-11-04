@@ -3,9 +3,12 @@ import { Mutation, Query } from 'react-apollo'
 import { withRouter } from 'next/router'
 import gql from 'graphql-tag'
 import swal from 'sweetalert'
+import moment from 'moment'
 
-import Page from '../components/page'
-import Section from '../components/section'
+import Page from '../components/page.jsx'
+import Section from '../components/section.jsx'
+import Embed from '../components/embed.jsx'
+
 import api from '../credentials/api.js'
 import formatBytes from '../helpers'
 
@@ -17,18 +20,22 @@ class Download extends Component {
       isLogin: false,
       id: '',
       loadingDDL: false,
-      errorDDL: false
+      errorDDL: false,
+      asPath: '',
+      embed: 'download'
     }
   }
 
   componentDidMount() {
     const {
-      query: { id }
+      query: { id },
+      asPath
     } = this.props.router
     const email = window.localStorage.getItem('email')
     this.setState({
       id,
-      email
+      email,
+      asPath
     })
     this.initClient()
   }
@@ -160,8 +167,22 @@ class Download extends Component {
     else this.handleAuthClick()
   }
 
+  // handleEmbed = params => {
+  //   const { asPath } = this.state
+  //   let temp = URL + asPath
+  //   switch (params) {
+  //     case 'html':
+  //       temp = `<a href="${temp}" title="Copy of 2049015 - Gund SeeDest 480p MegumiNime.rar">Copy of 2049015 - Gund SeeDest 480p MegumiNime.rar</a>`
+  //       break;
+  //     default:
+  //       break;
+  //   }
+  //   return temp
+  // }
+
   render() {
-    const { id, email, loadingDDL, errorDDL, isLogin } = this.state
+    const { id, email, loadingDDL, errorDDL, asPath } = this.state
+    moment.locale('en')
     const VIDEO_QUERY = gql`
       query fs3ByShortUrl($shortUrl: String) {
         fs3ByShortUrl(shortUrl: $shortUrl) {
@@ -172,6 +193,7 @@ class Download extends Component {
             gdriveId
             filename
             size
+            createdAt
           }
         }
       }
@@ -184,10 +206,9 @@ class Download extends Component {
         }
       }
     `
-    let handleTextButton = 'Download'
+    let handleTextButton = 'Download Now'
     if (loadingDDL) handleTextButton = 'Processing'
     else if (errorDDL) handleTextButton = 'Failed'
-    else if (!isLogin) handleTextButton = 'Login / Register'
     return (
       <Page title="Download">
         {id !== '' ? (
@@ -201,14 +222,28 @@ class Download extends Component {
               return (
                 <Section heading={`Download ${video.filename}`}>
                   <div className="file-info">
-                    <table className="table table-striped table-sm">
-                      <tbody>
-                        <tr>
-                          <th scope="row">Size</th>
-                          <td>{formatBytes(video.size)}</td>
-                        </tr>
-                      </tbody>
-                    </table>
+                    <div className="table-responsive-md">
+                      <table className="table">
+                        <tbody>
+                          <tr>
+                            <td>
+                              Filename
+                              <br />
+                              Size
+                              <br />
+                              Uploaded
+                            </td>
+                            <td>
+                              : {video.filename}
+                              <br />: {formatBytes(video.size)}
+                              <br />:
+                              {moment(Date(video.createdAt)).format(`
+                                D MMM, YYYY`)}
+                            </td>
+                          </tr>
+                        </tbody>
+                      </table>
+                    </div>
                   </div>
                   <Mutation mutation={DOWNLOAD}>
                     {download => (
@@ -229,9 +264,10 @@ class Download extends Component {
                   </Mutation>
                   {errorDDL && (
                     <div>
-                      <p>Silakan reload untuk mencoba lagi</p>
+                      <p>Silakan reload/refresh untuk mencoba lagi</p>
                     </div>
                   )}
+                  <Embed asPath={asPath} filename={video.filename} />
                 </Section>
               )
             }}
@@ -240,9 +276,10 @@ class Download extends Component {
           <span>loading....</span>
         )}
         <style jsx>{`
-          form {
-            width: fit-content;
-            margin: auto;
+          .file-info {
+            text-align: left;
+            margin-top: 2rem;
+            margin-bottom: 2rem;
           }
         `}</style>
       </Page>

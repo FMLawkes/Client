@@ -6,13 +6,13 @@ const Section = ({ heading, children }) => (
       h1 {
         margin-top: 1.5em;
         margin-bottom: 0.5em;
-        font-size: 120%;
+        text-align: center;
       }
       section {
         display: flex;
         align-items: center;
-        text-align: center;
         flex-direction: column;
+        margin-bottom: 2rem;
       }
     `}</style>
   </section>
