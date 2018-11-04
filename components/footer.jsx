@@ -1,20 +1,22 @@
+import Link from 'next/link'
+
 const Footer = () => (
   <footer className="footer container">
     <div className="row" id="nav">
       <div className="col">
-        <a href="/terms-conditions">Term and Conditions</a>
+        <Link href="/terms">Term and Conditions</Link>
       </div>
       <div className="col">
-        <a href="/copyright">Copyright Policy</a>
+        <Link href="/copyright">Copyright Policy</Link>
       </div>
       <div className="col">
-        <a href="/privacy">Privacy Policy</a>
+        <Link href="/privacy">Privacy Policy</Link>
       </div>
       <div className="col">
-        <a href="/#">About US</a>
+        <Link href="/#">About US</Link>
       </div>
       <div className="col">
-        <a href="/#">Contact US</a>
+        <Link href="/#">Contact US</Link>
       </div>
     </div>
     <div className="row copyright">

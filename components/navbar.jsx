@@ -1,15 +1,18 @@
 import React from 'react'
+import Link from 'next/link'
 
 const Navbar = () => (
   <nav className="navbar navbar-expand-lg navbar-light container">
-    <a className="navbar-brand" href="/">
-      <img
-        src="/static/logo.png"
-        height="40"
-        className="d-inline-block align-top"
-        alt="Anifiles"
-      />
-    </a>
+    <Link href="/">
+      <a className="navbar-brand">
+        <img
+          src="/static/logo.png"
+          height="40"
+          className="d-inline-block align-top"
+          alt="Anifiles"
+        />
+      </a>
+    </Link>
     <button
       className="navbar-toggler"
       type="button"
@@ -24,9 +27,9 @@ const Navbar = () => (
     <div className="collapse navbar-collapse" id="navbarNav">
       <ul className="navbar-nav">
         <li className="nav-item">
-          <a className="nav-link" href="/">
-            Home
-          </a>
+          <Link href="/">
+            <a className="nav-link">Home</a>
+          </Link>
         </li>
         <li className="nav-item">
           <a className="nav-link" href="#">
