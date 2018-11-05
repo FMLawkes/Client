@@ -15,10 +15,6 @@ const Page = ({ children, title }) => (
       <link rel="apple-touch-icon" href="/static/launcher-icon.png" />
       <link
         rel="stylesheet"
-        href="https://cdnjs.cloudflare.com/ajax/libs/meyer-reset/2.0/reset.min.css"
-      />
-      <link
-        rel="stylesheet"
         href="https://maxcdn.bootstrapcdn.com/bootstrap/4.0.0/css/bootstrap.min.css"
       />
     </Head>
