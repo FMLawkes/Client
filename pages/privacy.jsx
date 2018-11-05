@@ -14,6 +14,7 @@ const Privacy = () => (
       <ul>
         <li>
           <b>Personal identification information</b>
+          <br />
           We may collect personal identification information from Users in a
           variety of ways, including, but not limited to, when Users visit our
           site, register on the site, and in connection with other activities,
@@ -27,6 +28,7 @@ const Privacy = () => (
         </li>
         <li>
           <b>Non-personal identification information</b>
+          <br />
           We may collect non-personal identification information about Users
           whenever they interact with our Site. Non-personal identification
           information may include the browser name, the type of computer and
@@ -36,6 +38,7 @@ const Privacy = () => (
         </li>
         <li>
           <b>Web browser cookies</b>
+          <br />
           Our Site may use &quot;cookies&quot; to enhance User experience.
           User&apos;s web browser places cookies on their hard drive for
           record-keeping purposes and sometimes to track information about them.
@@ -45,6 +48,7 @@ const Privacy = () => (
         </li>
         <li>
           <b>How we use collected information</b>
+          <br />
           Anfiiles may collect and use Users personal information for the
           following purposes: - To improve our Site We may use feedback you
           provide to improve our products and services. - To improve customer
@@ -53,6 +57,7 @@ const Privacy = () => (
         </li>
         <li>
           <b>How we protect your information</b>
+          <br />
           We adopt appropriate data collection, storage and processing practices
           and security measures to protect against unauthorized access,
           alteration, disclosure or destruction of your personal information,
@@ -60,6 +65,7 @@ const Privacy = () => (
         </li>
         <li>
           <b>Sharing your personal information</b>
+          <br />
           We do not sell, trade, or rent Users personal identification
           information to others. We may share generic aggregated demographic
           information not linked to any personal identification information
@@ -68,6 +74,7 @@ const Privacy = () => (
         </li>
         <li>
           <b>Third party websites</b>
+          <br />
           Users may find advertising or other content on our Site that link to
           the sites and services of our partners, suppliers, advertisers,
           sponsors, licensors and other third parties. We do not control the
@@ -81,6 +88,7 @@ const Privacy = () => (
         </li>
         <li>
           <b>Advertising</b>
+          <br />
           Ads appearing on our site may be delivered to Users by advertising
           partners, who may set cookies. These cookies allow the ad server to
           recognize your computer each time they send you an online
@@ -92,6 +100,7 @@ const Privacy = () => (
         </li>
         <li>
           <b>Changes to this privacy policy</b>
+          <br />
           Anfiiles has the discretion to update this privacy policy at any time.
           When we do, we will post those changes on this page. You acknowledge
           and agree that it is your responsibility to review this privacy policy
@@ -99,6 +108,7 @@ const Privacy = () => (
         </li>
         <li>
           <b>Your acceptance of these terms</b>
+          <br />
           By using this Site, you signify your acceptance of this policy. If you
           do not agree to this policy, please do not use our Site. Your
           continued use of the Site following the posting of changes to this
@@ -106,6 +116,7 @@ const Privacy = () => (
         </li>
         <li>
           <b>Contacting us</b>
+          <br />
           If you have any questions about this Privacy Policy, the practices of
           this site, or your dealings with this site, please contact us.
         </li>
