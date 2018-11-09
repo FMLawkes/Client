@@ -7,7 +7,7 @@ import { FaFolderOpen } from 'react-icons/fa'
 import Page from '../components/page.jsx'
 import Section from '../components/section.jsx'
 
-import api from '../credentials/api'
+// import api from '../credentials/api'
 
 class Upload extends Component {
   constructor(props) {
@@ -19,14 +19,15 @@ class Upload extends Component {
   // }
 
   showPicker = async () => {
+    const origin = window.location.protocol + '//' + window.location.host
     const oauthToken = await gapi.auth2
       .getAuthInstance()
       .currentUser.get()
       .getAuthResponse().id_token
-
     var view = new google.picker.View(google.picker.ViewId.DOCS)
     view.setMimeTypes('image/png,image/jpeg,image/jpg')
     var picker = new google.picker.PickerBuilder()
+      .setOrigin(origin)
       .enableFeature(google.picker.Feature.NAV_HIDDEN)
       .enableFeature(google.picker.Feature.MULTISELECT_ENABLED)
       .setAppId('585617023855')
