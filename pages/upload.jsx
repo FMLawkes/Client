@@ -7,74 +7,70 @@ import { FaFolderOpen } from 'react-icons/fa'
 import Page from '../components/page.jsx'
 import Section from '../components/section.jsx'
 
-// import api from '../credentials/api'
+import api from '../credentials/api'
+import { filesURL } from '../configs/route-paths'
 
 class Upload extends Component {
   constructor(props) {
     super(props)
   }
 
-  // componentDidMount() {
-  //   gapi.load('picker', { callback: this.showPicker })
-  // }
+  doAuth = callback => {
+    window.gapi.auth.authorize(
+      {
+        client_id: api.CLIENT_ID,
+        scope: api.SCOPES,
+        immediate: false
+      },
+      callback
+    )
+  }
 
-  showPicker = async () => {
-    const origin = window.location.protocol + '//' + window.location.host
-    const oauthToken = await gapi.auth2
-      .getAuthInstance()
-      .currentUser.get()
-      .getAuthResponse().id_token
-    var view = new google.picker.View(google.picker.ViewId.DOCS)
-    view.setMimeTypes('image/png,image/jpeg,image/jpg')
-    var picker = new google.picker.PickerBuilder()
-      .setOrigin(origin)
-      .enableFeature(google.picker.Feature.NAV_HIDDEN)
+  createPicker = async oauthToken => {
+    const {
+      result: { items: folders }
+    } = await gapi.client.drive.files.list({
+      q: "mimeType = 'application/vnd.google-apps.folder' and title='anifiles'",
+      fields: 'nextPageToken, items(id, title)'
+    })
+    let folderId = ''
+    if (!folders.length) {
+      const {
+        result: { id }
+      } = await gapi.client.drive.files.insert({
+        resource: {
+          title: 'anifiles',
+          mimeType: 'application/vnd.google-apps.folder',
+          copyRequiresWriterPermission: false
+        }
+      })
+      folderId = id
+    } else folderId = folders[0].id
+    const uploadView = new google.picker.DocsUploadView().setParent(folderId)
+    const picker = new google.picker.PickerBuilder()
+      .addView(uploadView)
+      .hideTitleBar()
       .enableFeature(google.picker.Feature.MULTISELECT_ENABLED)
-      .setAppId('585617023855')
+      .setAppId(api.CLIENT_ID)
       .setOAuthToken(oauthToken)
-      .addView(view)
-      .addView(new google.picker.DocsUploadView())
-      .setDeveloperKey('AIzaSyDvtiR3Ld1MJksza74z0DIA6VcXCxrByrk')
       .setCallback(this.pickerCallback)
       .build()
     picker.setVisible(true)
-    console.log(picker)
-    // const uploadView = new google.picker.DocsUploadView()
-    // const view = new google.picker.View(google.picker.ViewId.DOCS)
-    // this.picker = new google.picker.PickerBuilder()
-    //   .addView(google.picker.ViewId.DOCS)
-    //   .addView(uploadView)
-    //   .enableFeature(google.picker.Feature.NAV_HIDDEN)
-    //   .enableFeature(google.picker.Feature.MULTISELECT_ENABLED)
-    //   .setAppId(api.CLIENT_ID)
-    //   .setDeveloperKey('AIzaSyDvtiR3Ld1MJksza74z0DIA6VcXCxrByrk')
-    //   .setOAuthToken(oauthToken)
-    //   .setCallback(this.pickerCallback)
-    //   .build()
-    //   .setVisible(true)
+  }
 
-    // uploadView.setIncludeFolders(true)
-    // view.setMimeTypes('image/png,image/jpeg,image/jpg')
-    // var picker = new google.picker.PickerBuilder()
-    //   .enableFeature(google.picker.Feature.NAV_HIDDEN)
-    //   .enableFeature(google.picker.Feature.MULTISELECT_ENABLED)
-    //   .setAppId('585617023855')
-    //   .setOAuthToken(oauthToken)
-    //   .addView(google.picker.ViewId.DOCS)
-    //   .addView(uploadView)
-    //   .addView(new google.picker.DocsUploadView())
-    //   .setDeveloperKey('AIzaSyDvtiR3Ld1MJksza74z0DIA6VcXCxrByrk')
-    //   .setCallback(this.pickerCallback)
-    //   .build()
-    // console.log(picker)
-    // picker.setVisible(true)
+  showPicker = () => {
+    const token = window.gapi.auth.getToken()
+    const oauthToken = token && token.access_token
+    if (oauthToken) this.createPicker(oauthToken)
+    else
+      this.doAuth(response => {
+        if (response.access_token) this.createPicker(response.access_token)
+      })
   }
 
   pickerCallback = data => {
-    if (data.action == google.picker.Action.PICKED) {
-      var fileId = data.docs[0].id
-      alert('The user selected: ' + fileId)
-    }
+    if (data.action == google.picker.Action.PICKED)
+      this.props.router.push(filesURL)
   }
 
   handleClick = () => {
@@ -92,11 +88,11 @@ class Upload extends Component {
           <div className="select-area">
             <button
               onClick={this.handleClick}
-              className="btn btn-success"
+              className="btn btn-primary btn-upload"
               type="button"
               id="pick"
             >
-              <FaFolderOpen />
+              <FaFolderOpen style={{ marginRight: '.5rem' }} />
               Select File
             </button>
           </div>
@@ -109,6 +105,11 @@ class Upload extends Component {
             padding: 60px 15px;
             border: 5px dashed #394155;
             margin-bottom: 20px;
+          }
+          .btn-upload {
+            display: flex;
+            align-items: center;
+            margin: auto;
           }
         `}</style>
       </Page>

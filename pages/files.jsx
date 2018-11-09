@@ -2,11 +2,14 @@
 import React, { Component } from 'react'
 import { withRouter } from 'next/router'
 import moment from 'moment'
-
+import loadScript from 'load-script'
 import Page from '../components/page.jsx'
 import Section from '../components/section.jsx'
-
 import formatBytes from '../helpers'
+import api from '../credentials/api'
+
+const GOOGLE_SDK_URL = 'https://apis.google.com/js/api.js'
+let scriptLoadingStarted = false
 
 class Files extends Component {
   constructor(props) {
@@ -17,7 +20,47 @@ class Files extends Component {
   }
 
   componentDidMount() {
-    this.getFiles()
+    if (this.isGoogleReady()) this.onApiLoad()
+    else if (!scriptLoadingStarted) {
+      scriptLoadingStarted = true
+      loadScript(GOOGLE_SDK_URL, this.onApiLoad)
+    }
+  }
+
+  isGoogleReady = () => !!window.gapi
+
+  onApiLoad = () => {
+    gapi.load('client')
+    this.initClient()
+  }
+
+  initClient = () => {
+    window.gapi &&
+      window.gapi.load('client:auth2', () => {
+        window.gapi.client
+          .init({
+            apiKey: api.API_KEY,
+            clientId: api.CLIENT_ID,
+            discoveryDocs: api.DISCOVERY_DOCS,
+            scope: api.SCOPES,
+            immediate: false
+          })
+          .then(() => {
+            gapi.auth2
+              .getAuthInstance()
+              .isSignedIn.listen(this.updateSigninStatus)
+            this.updateSigninStatus(
+              gapi.auth2.getAuthInstance().isSignedIn.get()
+            )
+          })
+      })
+  }
+
+  updateSigninStatus = isSignedIn => {
+    this.setState({
+      isLogin: isSignedIn
+    })
+    if (isSignedIn) this.getFiles()
   }
 
   getFiles = async () => {

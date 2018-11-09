@@ -14,6 +14,10 @@ app
       handle(req, res)
     })
 
+    server.get('/upload', (req, res) => {
+      handle(req, res)
+    })
+
     server.get('/copyright', (req, res) => {
       handle(req, res)
     })

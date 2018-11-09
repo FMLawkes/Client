@@ -1,7 +1,12 @@
 import React, { Fragment } from 'react'
 import Link from 'next/link'
 
-import { homeURL, unknownURL, filesURL } from '../configs/route-paths'
+import {
+  homeURL,
+  unknownURL,
+  filesURL,
+  uploadURL
+} from '../configs/route-paths'
 
 const Navbar = ({ router, doLogin, doLogout, isLogin, name, image }) => {
   const isHomePage = router && router.pathname === '/'
@@ -16,10 +21,16 @@ const Navbar = ({ router, doLogin, doLogout, isLogin, name, image }) => {
     }
   ]
   isLogin &&
-    navbars.push({
-      title: 'Files',
-      url: filesURL
-    })
+    navbars.push(
+      {
+        title: 'Files',
+        url: filesURL
+      },
+      {
+        title: 'Upload',
+        url: uploadURL
+      }
+    )
   return (
     <nav className="navbar navbar-expand-lg navbar-light container">
       <Link href="/">

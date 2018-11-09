@@ -35,20 +35,12 @@ class Main extends App {
   componentDidMount() {
     if (this.isGoogleReady()) this.onApiLoad()
     else if (!scriptLoadingStarted) {
-      // load google api and the init
       scriptLoadingStarted = true
       loadScript(GOOGLE_SDK_URL, this.onApiLoad)
-    } else {
-      // is loading
     }
-    this.initClient()
   }
 
   isGoogleReady = () => !!window.gapi
-
-  isGoogleAuthReady = () => !!window.gapi.auth
-
-  isGooglePickerReady = () => !!window.google.picker
 
   onApiLoad = () => {
     this.initClient()
@@ -63,7 +55,8 @@ class Main extends App {
             apiKey: api.API_KEY,
             clientId: api.CLIENT_ID,
             discoveryDocs: api.DISCOVERY_DOCS,
-            scope: api.SCOPES
+            scope: api.SCOPES,
+            immediate: false
           })
           .then(() => {
             gapi.auth2
