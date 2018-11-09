@@ -1,3 +1,5 @@
+/* global gapi */
+// /* global google */
 import 'cross-fetch/polyfill'
 import { InMemoryCache } from 'apollo-cache-inmemory'
 import { ApolloClient } from 'apollo-client'
@@ -5,16 +7,120 @@ import { createUploadLink } from 'apollo-upload-client'
 import { getDataFromTree, ApolloProvider } from 'react-apollo'
 import App, { Container } from 'next/app'
 import Head from 'next/head'
+import loadScript from 'load-script'
+
+import api from '../credentials/api'
+
+const GOOGLE_SDK_URL = 'https://apis.google.com/js/api.js'
+let scriptLoadingStarted = false
 
 const createApolloClient = (cache = {}) =>
   new ApolloClient({
     ssrMode: typeof window !== 'undefined',
     cache: new InMemoryCache().restore(cache),
     link: createUploadLink({ uri: 'https://api.anifiles.org/graphql' })
-    // uri: process.env.API_URI
   })
 
 class Main extends App {
+  constructor(props) {
+    super(props)
+    this.state = {
+      email: '',
+      name: '',
+      image: '',
+      isLogin: false
+    }
+  }
+
+  componentDidMount() {
+    if (this.isGoogleReady()) this.onApiLoad()
+    else if (!scriptLoadingStarted) {
+      // load google api and the init
+      scriptLoadingStarted = true
+      loadScript(GOOGLE_SDK_URL, this.onApiLoad)
+    } else {
+      // is loading
+    }
+    this.initClient()
+  }
+
+  isGoogleReady = () => !!window.gapi
+
+  isGoogleAuthReady = () => !!window.gapi.auth
+
+  isGooglePickerReady = () => !!window.google.picker
+
+  onApiLoad = () => {
+    this.initClient()
+    gapi.load('picker')
+  }
+
+  initClient = () => {
+    window.gapi &&
+      window.gapi.load('client:auth2', () => {
+        window.gapi.client
+          .init({
+            apiKey: api.API_KEY,
+            clientId: api.CLIENT_ID,
+            discoveryDocs: api.DISCOVERY_DOCS,
+            scope: api.SCOPES
+          })
+          .then(() => {
+            gapi.auth2
+              .getAuthInstance()
+              .isSignedIn.listen(this.updateSigninStatus)
+            this.updateSigninStatus(
+              gapi.auth2.getAuthInstance().isSignedIn.get()
+            )
+          })
+      })
+  }
+
+  updateSigninStatus = isSignedIn => {
+    this.setState({
+      isLogin: isSignedIn
+    })
+    if (isSignedIn) {
+      const profile = gapi.auth2
+        .getAuthInstance()
+        .currentUser.get()
+        .getBasicProfile()
+      const name = profile.getName()
+      const image = profile.getImageUrl()
+      const email = profile.getEmail()
+      this.setState({
+        email,
+        image,
+        name
+      })
+    }
+  }
+
+  handleAuthClick = () => {
+    gapi.auth2.getAuthInstance().signIn()
+  }
+
+  handleLogout = () => {
+    gapi &&
+      gapi.auth2
+        .getAuthInstance()
+        .signOut()
+        .then(() => {
+          this.setState({
+            email: '',
+            name: '',
+            image: ''
+          })
+        })
+        .catch(() => {
+          this.setState({
+            email: '',
+            name: '',
+            image: ''
+          })
+        })
+  }
+
   static async getInitialProps({ ctx, router, Component }) {
     const props = {}
     if (Component.getInitialProps)
@@ -48,10 +154,20 @@ class Main extends App {
 
   render() {
     const { Component, pageProps } = this.props
+    const { isLogin, email, name, image } = this.state
+    const hocProps = {
+      ...pageProps,
+      isLogin,
+      email,
+      name,
+      image,
+      doLogin: this.handleAuthClick,
+      doLogout: this.handleLogout
+    }
     return (
       <Container>
         <ApolloProvider client={this.apolloClient}>
-          <Component {...pageProps} />
+          <Component {...hocProps} />
         </ApolloProvider>
       </Container>
     )

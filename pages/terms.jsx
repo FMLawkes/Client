@@ -1,9 +1,11 @@
+import { withRouter } from 'next/router'
+
 import Page from '../components/page.jsx'
 import Section from '../components/section.jsx'
 
-const Terms = () => (
-  <Page title="Terms & Conditions">
-    <Section heading="Terms & Conditions">
+const Terms = props => (
+  <Page title="Terms & Conditions" {...props}>
+    <Section heading="Terms & Conditions" {...props}>
       <h3 className="other-title">
         This Anifiles Service Agreement (the &quot;Agreement&quot;) describes
         the terms and conditions on which Anifiles (&quot;we&quot; ) offer
@@ -41,4 +43,4 @@ const Terms = () => (
   </Page>
 )
 
-export default Terms
+export default withRouter(Terms)

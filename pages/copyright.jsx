@@ -1,9 +1,11 @@
+import { withRouter } from 'next/router'
+
 import Page from '../components/page.jsx'
 import Section from '../components/section.jsx'
 
-const Copyright = () => (
-  <Page title="Copyright Policy">
-    <Section heading="Copyright Policy">
+const Copyright = props => (
+  <Page title="Copyright Policy" {...props}>
+    <Section heading="Copyright Policy" {...props}>
       <p>
         Anifiles&nbsp;intends to fully comply with the Digital Millennium
         Copyright Act (&quot;DMCA&quot;), including the notice and &quot;take
@@ -58,4 +60,4 @@ const Copyright = () => (
   </Page>
 )
 
-export default Copyright
+export default withRouter(Copyright)

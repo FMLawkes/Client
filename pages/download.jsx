@@ -1,3 +1,4 @@
+/* global gapi */
 import React, { Component } from 'react'
 import { Mutation, Query } from 'react-apollo'
 import { withRouter } from 'next/router'
@@ -8,16 +9,12 @@ import moment from 'moment'
 import Page from '../components/page.jsx'
 import Section from '../components/section.jsx'
 import Embed from '../components/embed.jsx'
-
-import api from '../credentials/api.js'
 import formatBytes from '../helpers'
 
 class Download extends Component {
   constructor(props) {
     super(props)
     this.state = {
-      email: '',
-      isLogin: false,
       id: '',
       loadingDDL: false,
       errorDDL: false,
@@ -31,61 +28,14 @@ class Download extends Component {
       query: { id },
       asPath
     } = this.props.router
-    const email = window.localStorage.getItem('email')
     this.setState({
       id,
-      email,
       asPath
     })
-    this.initClient()
-  }
-
-  updateSigninStatus = isSignedIn => {
-    this.setState({
-      isLogin: isSignedIn
-    })
-  }
-
-  initClient = () => {
-    const { gapi } = window
-    gapi.load('client:auth2', () => {
-      gapi.client
-        .init({
-          apiKey: api.API_KEY,
-          clientId: api.CLIENT_ID,
-          discoveryDocs: api.DISCOVERY_DOCS,
-          scope: api.SCOPES
-        })
-        .then(() => {
-          gapi.auth2
-            .getAuthInstance()
-            .isSignedIn.listen(this.updateSigninStatus)
-          this.updateSigninStatus(gapi.auth2.getAuthInstance().isSignedIn.get())
-        })
-    })
-  }
-
-  handleAuthClick = () => {
-    const { gapi } = window
-    gapi.auth2
-      .getAuthInstance()
-      .signIn()
-      .then(() => {
-        const profile = gapi.auth2
-          .getAuthInstance()
-          .currentUser.get()
-          .getBasicProfile()
-        const email = profile.getEmail()
-        this.setState({
-          email
-        })
-        window.localStorage.setItem('email', email)
-      })
   }
 
   insertFileIntoFolder = async (folderId, fileId) => {
     try {
-      const { gapi } = window
       const body = { id: folderId }
       await gapi.client.drive.parents.insert({
         fileId,
@@ -102,7 +52,6 @@ class Download extends Component {
 
   handleDownload = async params => {
     try {
-      const { gapi } = window
       this.setState({
         loadingDDL: true
       })
@@ -161,27 +110,9 @@ class Download extends Component {
     }
   }
 
-  handleSubmit = params => {
-    const { isLogin } = this.state
-    if (isLogin) this.handleDownload(params)
-    else this.handleAuthClick()
-  }
-
-  // handleEmbed = params => {
-  //   const { asPath } = this.state
-  //   let temp = URL + asPath
-  //   switch (params) {
-  //     case 'html':
-  //       temp = `<a href="${temp}" title="Copy of 2049015 - Gund SeeDest 480p MegumiNime.rar">Copy of 2049015 - Gund SeeDest 480p MegumiNime.rar</a>`
-  //       break;
-  //     default:
-  //       break;
-  //   }
-  //   return temp
-  // }
-
   render() {
-    const { id, email, loadingDDL, errorDDL, asPath } = this.state
+    const { id, loadingDDL, errorDDL, asPath } = this.state
+    const { email, isLogin, doLogin, doLogout, name, image } = this.props
     moment.locale('en')
     const VIDEO_QUERY = gql`
       query fs3ByShortUrl($shortUrl: String) {
@@ -209,8 +140,16 @@ class Download extends Component {
     let handleTextButton = 'Download Now'
     if (loadingDDL) handleTextButton = 'Processing'
     else if (errorDDL) handleTextButton = 'Failed'
+    const pageProps = {
+      title: 'Download',
+      isLogin,
+      doLogin,
+      doLogout,
+      name,
+      image
+    }
     return (
-      <Page title="Download">
+      <Page {...pageProps}>
         {id !== '' ? (
           <Query query={VIDEO_QUERY} variables={{ shortUrl: id }}>
             {({ loading, error, data }) => {
@@ -220,7 +159,7 @@ class Download extends Component {
               if (!fs3ByShortUrl) return <span>File Not Found....</span>
               const { video } = fs3ByShortUrl
               return (
-                <Section heading={`Download ${video.filename}`}>
+                <Section heading={`Download ${video.filename}`} {...this.props}>
                   <div className="file-info">
                     <div className="table-responsive-md">
                       <table className="table">
@@ -246,7 +185,7 @@ class Download extends Component {
                     </div>
                   </div>
                   <Mutation mutation={DOWNLOAD}>
-                    {download => (
+                    {(download, { loading, error }) => (
                       <button
                         disabled={loadingDDL || errorDDL ? true : false}
                         type="submit"
@@ -254,11 +193,19 @@ class Download extends Component {
                         id="btn-download"
                         onClick={e => {
                           e.preventDefault()
-                          download({ variables: { email, videoId: video._id } })
-                          this.handleSubmit(video)
+                          if (isLogin) {
+                            download({
+                              variables: { email, videoId: video._id }
+                            })
+                            !loading && !error
+                              ? this.handleDownload(video)
+                              : null
+                          } else doLogin()
                         }}
                       >
-                        {handleTextButton}
+                        {loading && 'PLEASE WAIT'}
+                        {error && 'PLEASE REFRESH THIS PAGE'}
+                        {!loading && !error && handleTextButton}
                       </button>
                     )}
                   </Mutation>

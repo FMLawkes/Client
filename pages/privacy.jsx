@@ -1,9 +1,11 @@
+import { withRouter } from 'next/router'
+
 import Page from '../components/page.jsx'
 import Section from '../components/section.jsx'
 
-const Privacy = () => (
-  <Page title="Privacy Policy">
-    <Section heading="Privacy Policy">
+const Privacy = props => (
+  <Page title="Privacy Policy" {...props}>
+    <Section heading="Privacy Policy" {...props}>
       <p>
         This Privacy Policy governs the manner in which Anifiles collects, uses,
         maintains and discloses information collected from users (each,
@@ -125,4 +127,4 @@ const Privacy = () => (
   </Page>
 )
 
-export default Privacy
+export default withRouter(Privacy)
