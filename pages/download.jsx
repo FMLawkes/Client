@@ -153,13 +153,26 @@ class Download extends Component {
         {id !== '' ? (
           <Query query={VIDEO_QUERY} variables={{ shortUrl: id }}>
             {({ loading, error, data }) => {
-              if (loading) return <span>loading....</span>
-              if (error) return <span>Error....</span>
+              if (loading)
+                return <Section heading={`Loading`} {...this.props} download />
+              if (error)
+                return <Section heading={`Error`} {...this.props} download />
               const { fs3ByShortUrl } = data
-              if (!fs3ByShortUrl) return <span>File Not Found....</span>
+              if (!fs3ByShortUrl)
+                return (
+                  <Section
+                    heading={`File Not Found`}
+                    {...this.props}
+                    download
+                  />
+                )
               const { video } = fs3ByShortUrl
               return (
-                <Section heading={`Download ${video.filename}`} {...this.props}>
+                <Section
+                  heading={`Download ${video.filename}`}
+                  {...this.props}
+                  download
+                >
                   <div className="file-info">
                     <div className="table-responsive-md">
                       <table className="table">
@@ -220,7 +233,7 @@ class Download extends Component {
             }}
           </Query>
         ) : (
-          <span>loading....</span>
+          <Section heading={`Loading`} {...this.props} download />
         )}
         <style jsx>{`
           .file-info {

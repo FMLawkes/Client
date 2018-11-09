@@ -1,4 +1,4 @@
-const Section = ({ heading, children, router }) => {
+const Section = ({ heading, children, router, download = false }) => {
   const isHomePage = router && router.pathname === '/'
   return (
     <section>
@@ -11,7 +11,7 @@ const Section = ({ heading, children, router }) => {
         }
         section {
           display: flex;
-          align-items: ${isHomePage ? 'center' : 'flex-start'};
+          align-items: ${isHomePage || download ? 'center' : 'flex-start'};
           flex-direction: column;
           margin-bottom: 2rem;
         }
