@@ -8,6 +8,7 @@ const Section = ({ heading, children, router, download = false }) => {
         h1 {
           margin-top: ${isHomePage ? '1.5em' : '1em'};
           margin-bottom: 0.5em;
+          text-align: ${isHomePage || download ? 'center' : 'left'};
         }
         section {
           display: flex;
