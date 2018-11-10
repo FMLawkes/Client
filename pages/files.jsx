@@ -11,6 +11,7 @@ import Section from '../components/section.jsx'
 import Loading from '../components/loading.jsx'
 import InputCheckbox from '../components/input-checkbox.jsx'
 import Embed from '../components/embed.jsx'
+import Modal from '../components/modal.jsx'
 import formatBytes from '../helpers'
 import api from '../credentials/api'
 // import { URL } from '../configs/constants'
@@ -23,10 +24,15 @@ class Files extends Component {
     super(props)
     this.state = {
       files: [],
-      isLoading: true,
+      isLoading: false,
       checked: [],
       checkedAll: false,
       showEmbed: false,
+      showModal: false,
+      selectedFile: {
+        id: '',
+        title: ''
+      },
       asPath: [],
       filename: [],
       activePage: 0
@@ -34,6 +40,9 @@ class Files extends Component {
   }
 
   componentDidMount() {
+    this.setState({
+      isLoading: true
+    })
     if (this.isGoogleReady()) this.onApiLoad()
     else if (!scriptLoadingStarted) {
       scriptLoadingStarted = true
@@ -192,6 +201,63 @@ class Files extends Component {
     })
   }
 
+  handleModal = () => {
+    const temp = this.state.showModal
+    this.setState(
+      {
+        showModal: !temp
+      },
+      () => {
+        if (temp)
+          this.setState({
+            selectedFile: {
+              title: '',
+              id: ''
+            }
+          })
+      }
+    )
+  }
+
+  handleFile = (id, title) => {
+    this.setState(
+      {
+        selectedFile: {
+          id,
+          title
+        }
+      },
+      () => this.handleModal()
+    )
+  }
+
+  handleChangeInputModal = ({ target: { value } }) => {
+    this.setState({
+      selectedFile: {
+        title: value,
+        id: this.state.selectedFile.id
+      }
+    })
+  }
+
+  handleEditFile = async () => {
+    const {
+      selectedFile: { id: fileId, title }
+    } = this.state
+    try {
+      await gapi.client.drive.files.patch({
+        fileId,
+        resource: {
+          title
+        }
+      })
+      await this.getFiles()
+      this.handleModal()
+    } catch (error) {
+      console.log(error)
+    }
+  }
+
   render() {
     const {
       files,
@@ -201,7 +267,9 @@ class Files extends Component {
       showEmbed,
       filename,
       asPath,
-      activePage
+      activePage,
+      showModal,
+      selectedFile
     } = this.state
     moment('14-10-2012', 'DD-MM-YYYY', 'id', true)
     const pageProps = {
@@ -210,6 +278,13 @@ class Files extends Component {
     }
     const showFiles = [...files].slice(activePage * 10, activePage * 10 + 10)
     const thead = ['Name', 'Size', 'Created time', 'Action']
+    const modalProps = {
+      showModal,
+      filename: selectedFile.title,
+      doChange: this.handleChangeInputModal,
+      hideModal: this.handleModal,
+      saveChange: this.handleEditFile
+    }
     return (
       <Page {...pageProps}>
         <Section heading="My Files" {...this.props}>
@@ -264,7 +339,7 @@ class Files extends Component {
                               <a
                                 role="button"
                                 tabIndex="0"
-                                onClick={() => null}
+                                onClick={() => this.handleFile(id, title)}
                                 style={{
                                   marginRight: '1rem'
                                 }}
@@ -333,6 +408,7 @@ class Files extends Component {
                 </nav>
               </div>
               {showEmbed && <Embed asPath={asPath} filename={filename} />}
+              {showModal && <Modal {...modalProps} />}
             </div>
           )}
         </Section>

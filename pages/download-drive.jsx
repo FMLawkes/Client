@@ -163,6 +163,13 @@ class DownloadDrive extends Component {
           Download File
         </button>
         <Embed asPath={[asPath]} filename={[title]} />
+        <style jsx>{`
+          .file-info {
+            text-align: left;
+            margin-top: 2rem;
+            margin-bottom: 2rem;
+          }
+        `}</style>
       </Section>
     )
   }

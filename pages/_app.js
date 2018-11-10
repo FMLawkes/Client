@@ -3,9 +3,9 @@
 import 'cross-fetch/polyfill'
 import { InMemoryCache } from 'apollo-cache-inmemory'
 import { ApolloClient } from 'apollo-client'
-import { createUploadLink } from 'apollo-upload-client'
 import { getDataFromTree, ApolloProvider } from 'react-apollo'
 import App, { Container } from 'next/app'
+import { HttpLink } from 'apollo-link-http'
 import Head from 'next/head'
 import loadScript from 'load-script'
 
@@ -14,11 +14,16 @@ import api from '../credentials/api'
 const GOOGLE_SDK_URL = 'https://apis.google.com/js/api.js'
 let scriptLoadingStarted = false
 
-const createApolloClient = (cache = {}) =>
+const createApolloClient = () =>
   new ApolloClient({
     ssrMode: typeof window !== 'undefined',
-    cache: new InMemoryCache().restore(cache),
-    link: createUploadLink({ uri: 'https://api.anifiles.org/graphql' })
+    cache: new InMemoryCache(),
+    link: new HttpLink({ uri: 'https://api.anifiles.org/graphql' }),
+    defaultOptions: {
+      query: {
+        fetchPolicy: 'no-cache'
+      }
+    }
   })
 
 class Main extends App {

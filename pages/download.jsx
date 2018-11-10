@@ -114,6 +114,7 @@ class Download extends Component {
 
   render() {
     const { id, loadingDDL, errorDDL, asPath } = this.state
+    console.log(id)
     const {
       email,
       isLogin,
@@ -164,87 +165,93 @@ class Download extends Component {
         {id !== '' ? (
           <Query query={VIDEO_QUERY} variables={{ shortUrl: id }}>
             {({ loading, error, data }) => {
+              console.log('id ==>', id)
+              console.log('data ==>', data)
+              console.log('loading ==>', loading)
+              console.log('error ===>', error)
               if (loading)
                 return (
                   <Section heading={`Loading`} {...this.props} download>
                     <Loading />
                   </Section>
                 )
-              if (error)
+              else if (error)
                 return <Section heading={`Error`} {...this.props} download />
-              const { fs3ByShortUrl } = data
-              if (!fs3ByShortUrl)
+              else if (data) {
+                const { fs3ByShortUrl } = data
+                if (!fs3ByShortUrl)
+                  return (
+                    <Section
+                      heading={`File Not Found`}
+                      {...this.props}
+                      download
+                    />
+                  )
+                const { video } = fs3ByShortUrl
                 return (
                   <Section
-                    heading={`File Not Found`}
+                    heading={`Download ${video.filename}`}
                     {...this.props}
                     download
-                  />
-                )
-              const { video } = fs3ByShortUrl
-              return (
-                <Section
-                  heading={`Download ${video.filename}`}
-                  {...this.props}
-                  download
-                >
-                  <div className="file-info">
-                    <div className="table-responsive-md">
-                      <table className="table">
-                        <tbody>
-                          <tr>
-                            <td>
-                              Filename
-                              <br />
-                              Size
-                              <br />
-                              Uploaded
-                            </td>
-                            <td>
-                              : {video.filename}
-                              <br />: {formatBytes(video.size)}
-                              <br />:
-                              {moment(Date(video.createdAt)).format(`
-                                D MMM, YYYY`)}
-                            </td>
-                          </tr>
-                        </tbody>
-                      </table>
+                  >
+                    <div className="file-info">
+                      <div className="table-responsive-md">
+                        <table className="table">
+                          <tbody>
+                            <tr>
+                              <td>
+                                Filename
+                                <br />
+                                Size
+                                <br />
+                                Uploaded
+                              </td>
+                              <td>
+                                : {video.filename}
+                                <br />: {formatBytes(video.size)}
+                                <br />:
+                                {moment(Date(video.createdAt)).format(`
+                                  D MMM, YYYY`)}
+                              </td>
+                            </tr>
+                          </tbody>
+                        </table>
+                      </div>
                     </div>
-                  </div>
-                  <Mutation mutation={DOWNLOAD}>
-                    {(download, { loading, error }) => (
-                      <button
-                        disabled={loadingDDL || errorDDL ? true : false}
-                        type="submit"
-                        className="btn btn-primary"
-                        id="btn-download"
-                        onClick={e => {
-                          e.preventDefault()
-                          if (isLogin) {
-                            download({
-                              variables: { email, videoId: video._id }
-                            })
-                            !loading && !error
-                              ? this.handleDownload(video)
-                              : null
-                          } else doLogin()
-                        }}
-                      >
-                        {loading && 'PLEASE WAIT'}
-                        {error && 'PLEASE REFRESH THIS PAGE'}
-                        {!loading && !error && handleTextButton}
-                      </button>
+                    <Mutation mutation={DOWNLOAD}>
+                      {(download, { loading, error }) => (
+                        <button
+                          disabled={loadingDDL || errorDDL ? true : false}
+                          type="submit"
+                          className="btn btn-primary"
+                          id="btn-download"
+                          onClick={e => {
+                            e.preventDefault()
+                            if (isLogin) {
+                              download({
+                                variables: { email, videoId: video._id }
+                              })
+                              !loading && !error
+                                ? this.handleDownload(video)
+                                : null
+                            } else doLogin()
+                          }}
+                        >
+                          {loading && 'PLEASE WAIT'}
+                          {error && 'PLEASE REFRESH THIS PAGE'}
+                          {!loading && !error && handleTextButton}
+                        </button>
+                      )}
+                    </Mutation>
+                    {errorDDL && (
+                      <div>
+                        <p>Silakan reload/refresh untuk mencoba lagi</p>
+                      </div>
                     )}
-                  </Mutation>
-                  {errorDDL && (
-                    <div>
-                      <p>Silakan reload/refresh untuk mencoba lagi</p>
-                    </div>
-                  )}
-                  <Embed asPath={[asPath]} filename={[video.filename]} />
-                </Section>
-              )
+                    <Embed asPath={[asPath]} filename={[video.filename]} />
+                  </Section>
+                )
+              }
             }}
           </Query>
         ) : (
