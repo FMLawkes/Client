@@ -11,6 +11,7 @@ import Section from '../components/section.jsx'
 import Embed from '../components/embed.jsx'
 import Loading from '../components/loading.jsx'
 import formatBytes from '../helpers'
+import { URL } from '../configs/constants'
 
 class Download extends Component {
   constructor(props) {
@@ -31,7 +32,7 @@ class Download extends Component {
     } = this.props.router
     this.setState({
       id,
-      asPath
+      asPath: URL + asPath
     })
   }
 
@@ -241,7 +242,7 @@ class Download extends Component {
                       <p>Silakan reload/refresh untuk mencoba lagi</p>
                     </div>
                   )}
-                  <Embed asPath={asPath} filename={video.filename} />
+                  <Embed asPath={[asPath]} filename={[video.filename]} />
                 </Section>
               )
             }}
