@@ -1,5 +1,5 @@
 import React, { Component } from 'react'
-import { URL } from '../configs/constants'
+// import { URL } from '../configs/constants'
 
 class Embed extends Component {
   constructor(props) {
@@ -11,7 +11,7 @@ class Embed extends Component {
 
   componentDidMount() {
     const { asPath } = this.props
-    const link = asPath.map(e => URL + e)
+    const link = asPath.map(e => /* URL +  */ e)
     this.setState({
       link
     })
@@ -21,7 +21,7 @@ class Embed extends Component {
     const { link: oldState } = this.state
     const { asPath } = this.props
     if (oldState.length !== asPath.length) {
-      const newState = asPath.map(e => URL + e)
+      const newState = asPath.map(e => /* URL +  */ e)
       this.setState({
         link: newState
       })
@@ -35,14 +35,18 @@ class Embed extends Component {
       case 'html':
         link = asPath.map(
           (e, idx) =>
-            `<a href="${URL + e}" title="${filename[idx]}">${filename[idx]}</a>`
+            `<a href="${/* URL +  */ e}" title="${filename[idx]}">${
+              filename[idx]
+            }</a>`
         )
         break
       case 'forum':
-        link = asPath.map((e, idx) => `[URL=${URL + e}]${filename[idx]}[/URL]`)
+        link = asPath.map(
+          (e, idx) => `[URL=${/* URL +  */ e}]${filename[idx]}[/URL]`
+        )
         break
       case 'link':
-        link = asPath.map(e => URL + e)
+        link = asPath.map(e => /* URL +  */ e)
         break
     }
     this.setState({

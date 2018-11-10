@@ -13,7 +13,7 @@ import InputCheckbox from '../components/input-checkbox.jsx'
 import Embed from '../components/embed.jsx'
 import formatBytes from '../helpers'
 import api from '../credentials/api'
-import { URL } from '../configs/constants'
+// import { URL } from '../configs/constants'
 
 const GOOGLE_SDK_URL = 'https://apis.google.com/js/api.js'
 let scriptLoadingStarted = false
@@ -85,7 +85,8 @@ class Files extends Component {
       } = await gapi.client.drive.files.list({
         pageToken: next ? next : null,
         q: `'${folders[0].id}' in parents`,
-        fields: 'nextPageToken, items(id, title, fileSize, createdDate)'
+        fields:
+          'nextPageToken, items(id, title, fileSize, createdDate, webContentLink)'
       })
       const temp = res.concat(files)
       if (nextPageToken)
@@ -162,16 +163,18 @@ class Files extends Component {
     if (!isAllUncheck) {
       const fileId = []
       const filename = []
+      const webContentLinks = []
       checked.forEach((e, index) => {
         if (e) {
           fileId.push(files[index].id)
           filename.push(files[index].title)
+          webContentLinks.push(files[index].webContentLink)
         }
       })
-      const asPath = fileId.map(e => '/d/' + e)
+      // const asPath = fileId.map(e => '/d/' + e)
       this.setState({
         showEmbed: true,
-        asPath,
+        asPath: webContentLinks,
         filename
       })
     } else
@@ -231,7 +234,10 @@ class Files extends Component {
                 <tbody>
                   {files.length ? (
                     showFiles.map(
-                      ({ id, title, createdDate, fileSize }, index) => (
+                      (
+                        { id, title, createdDate, fileSize, webContentLink },
+                        index
+                      ) => (
                         <tr key={id}>
                           <th>
                             <InputCheckbox
@@ -241,7 +247,8 @@ class Files extends Component {
                           </th>
                           <td>
                             <a
-                              href={URL + '/d/' + id}
+                              // href={URL + '/d/' + id}
+                              href={webContentLink}
                               target="_blank"
                               rel="noopener noreferrer"
                             >

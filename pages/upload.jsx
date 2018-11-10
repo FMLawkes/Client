@@ -68,9 +68,20 @@ class Upload extends Component {
       })
   }
 
-  pickerCallback = data => {
-    if (data.action == google.picker.Action.PICKED)
+  pickerCallback = async data => {
+    if (data.action == google.picker.Action.PICKED) {
+      /* downloadUrl, id, url */
+      const { docs } = data
+      for (let { id } of docs)
+        await gapi.client.drive.permissions.insert({
+          fileId: id,
+          resource: {
+            type: 'anyone',
+            role: 'reader'
+          }
+        })
       this.props.router.push(filesURL)
+    }
   }
 
   handleClick = () => {
