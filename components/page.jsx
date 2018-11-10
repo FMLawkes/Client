@@ -2,6 +2,7 @@
 import React, { Fragment } from 'react'
 import Head from 'next/head'
 
+import { homeURL } from '../configs/route-paths'
 import Navbar from './navbar.jsx'
 import Footer from './footer.jsx'
 
@@ -23,6 +24,10 @@ const Page = ({
     image,
     router
   }
+  const { pathname, push } = router
+  const securePaths = ['/files', '/upload']
+  const isSecure = securePaths.find(e => e === pathname)
+  if (!isLogin && isSecure) push(homeURL)
   return (
     <Fragment>
       <Head>
@@ -64,7 +69,40 @@ const Page = ({
           height: 100%;
         }
         main {
+          display: flex;
           min-height: 75vh;
+        }
+        .loading {
+          margin: auto;
+        }
+        .table .thead-light th {
+          color: #fff;
+          background-color: #6c757d;
+          border-color: #dee2e6;
+        }
+        .actions {
+          display: flex;
+          align-items: center;
+          justify-content: flex-start;
+        }
+        span svg {
+          fill: #6c757d;
+        }
+        .page-link {
+          background-color: #1d212b;
+          border-color: #475470;
+          color: #fff;
+        }
+        .page-item.active .page-link {
+          background-color: #6c757d;
+          border-color: #475470;
+        }
+        .page-item.disabled {
+          display: none;
+          border-color: #475470;
+        }
+        a {
+          color: #fff;
         }
       `}</style>
       {/* <script async defer src="https://apis.google.com/js/api.js" /> */}

@@ -9,6 +9,7 @@ import moment from 'moment'
 import Page from '../components/page.jsx'
 import Section from '../components/section.jsx'
 import Embed from '../components/embed.jsx'
+import Loading from '../components/loading.jsx'
 import formatBytes from '../helpers'
 
 class Download extends Component {
@@ -112,7 +113,15 @@ class Download extends Component {
 
   render() {
     const { id, loadingDDL, errorDDL, asPath } = this.state
-    const { email, isLogin, doLogin, doLogout, name, image } = this.props
+    const {
+      email,
+      isLogin,
+      doLogin,
+      doLogout,
+      name,
+      image,
+      router
+    } = this.props
     moment.locale('en')
     const VIDEO_QUERY = gql`
       query fs3ByShortUrl($shortUrl: String) {
@@ -146,7 +155,8 @@ class Download extends Component {
       doLogin,
       doLogout,
       name,
-      image
+      image,
+      router
     }
     return (
       <Page {...pageProps}>
@@ -154,7 +164,11 @@ class Download extends Component {
           <Query query={VIDEO_QUERY} variables={{ shortUrl: id }}>
             {({ loading, error, data }) => {
               if (loading)
-                return <Section heading={`Loading`} {...this.props} download />
+                return (
+                  <Section heading={`Loading`} {...this.props} download>
+                    <Loading />
+                  </Section>
+                )
               if (error)
                 return <Section heading={`Error`} {...this.props} download />
               const { fs3ByShortUrl } = data
@@ -233,7 +247,9 @@ class Download extends Component {
             }}
           </Query>
         ) : (
-          <Section heading={`Loading`} {...this.props} download />
+          <Section heading={`Loading`} {...this.props} download>
+            <Loading />
+          </Section>
         )}
         <style jsx>{`
           .file-info {

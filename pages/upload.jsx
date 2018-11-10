@@ -88,7 +88,7 @@ class Upload extends Component {
           <div className="select-area">
             <button
               onClick={this.handleClick}
-              className="btn btn-primary btn-upload"
+              className="btn btn-secondary btn-upload"
               type="button"
               id="pick"
             >

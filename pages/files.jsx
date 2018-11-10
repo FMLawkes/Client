@@ -1,12 +1,19 @@
 /* global gapi */
 import React, { Component } from 'react'
 import { withRouter } from 'next/router'
+import { FaTrashAlt, FaRegEdit } from 'react-icons/fa'
 import moment from 'moment'
 import loadScript from 'load-script'
+import ReactPaginate from 'react-paginate'
+
 import Page from '../components/page.jsx'
 import Section from '../components/section.jsx'
+import Loading from '../components/loading.jsx'
+import InputCheckbox from '../components/input-checkbox.jsx'
+import Embed from '../components/embed.jsx'
 import formatBytes from '../helpers'
 import api from '../credentials/api'
+import { URL } from '../configs/constants'
 
 const GOOGLE_SDK_URL = 'https://apis.google.com/js/api.js'
 let scriptLoadingStarted = false
@@ -15,7 +22,14 @@ class Files extends Component {
   constructor(props) {
     super(props)
     this.state = {
-      files: []
+      files: [],
+      isLoading: true,
+      checked: [],
+      checkedAll: false,
+      showEmbed: false,
+      asPath: [],
+      filename: [],
+      activePage: 0
     }
   }
 
@@ -63,6 +77,25 @@ class Files extends Component {
     if (isSignedIn) this.getFiles()
   }
 
+  retrievePageOfFiles = async (result, folders, next) => {
+    const res = [...result]
+    try {
+      const {
+        result: { items: files, nextPageToken }
+      } = await gapi.client.drive.files.list({
+        pageToken: next ? next : null,
+        q: `'${folders[0].id}' in parents`,
+        fields: 'nextPageToken, items(id, title, fileSize, createdDate)'
+      })
+      const temp = res.concat(files)
+      if (nextPageToken)
+        return await this.retrievePageOfFiles(temp, folders, nextPageToken)
+      else return temp
+    } catch (error) {
+      console.log(error)
+    }
+  }
+
   getFiles = async () => {
     try {
       const {
@@ -73,19 +106,20 @@ class Files extends Component {
         fields: 'nextPageToken, items(id, title)'
       })
       if (folders.length) {
-        const {
-          result: { items: files }
-        } = await gapi.client.drive.files.list({
-          maxResults: 10,
-          q: `'${folders[0].id}' in parents`,
-          fields: 'items(id, title, fileSize, createdDate)'
-        })
+        const files = await this.retrievePageOfFiles([], folders)
+        const checked = []
+        for (let i in files) checked.push(false) // eslint-disable-line
         this.setState({
-          files
+          files,
+          checked,
+          isLoading: false
         })
       }
     } catch (error) {
       console.log(error)
+      this.setState({
+        isLoading: false
+      })
     }
   }
 
@@ -95,7 +129,6 @@ class Files extends Component {
       await gapi.client.drive.files.delete({
         fileId
       })
-      // await this.getFiles()
       const newFiles = files.filter(({ id }) => id !== fileId)
       this.setState({
         files: newFiles
@@ -104,58 +137,197 @@ class Files extends Component {
     return null
   }
 
+  handleCheckBox = idx => {
+    const { checked, checkedAll } = this.state
+    let temp = [...checked]
+    if (idx >= 0)
+      temp = checked.map((e, index) => {
+        if (index === idx) return !e
+        return e
+      })
+    else {
+      temp = checked.map(e => (e = !e))
+      this.setState({
+        checkedAll: !checkedAll
+      })
+    }
+    this.setState({
+      checked: temp
+    })
+  }
+
+  handleShowEmbed = () => {
+    const { checked, files } = this.state
+    const isAllUncheck = checked.every(e => e === false)
+    if (!isAllUncheck) {
+      const fileId = []
+      const filename = []
+      checked.forEach((e, index) => {
+        if (e) {
+          fileId.push(files[index].id)
+          filename.push(files[index].title)
+        }
+      })
+      const asPath = fileId.map(e => '/d/' + e)
+      this.setState({
+        showEmbed: true,
+        asPath,
+        filename
+      })
+    } else
+      this.setState({
+        showEmbed: false,
+        asPath: [],
+        filename: []
+      })
+  }
+
+  handlePageChange = pageNumber => {
+    const { selected } = pageNumber
+    this.setState({
+      activePage: selected
+    })
+  }
+
   render() {
-    const { files } = this.state
+    const {
+      files,
+      isLoading,
+      checked,
+      checkedAll,
+      showEmbed,
+      filename,
+      asPath,
+      activePage
+    } = this.state
     moment('14-10-2012', 'DD-MM-YYYY', 'id', true)
     const pageProps = {
       ...this.props,
-      title: 'Anifiles'
+      title: 'My Files'
     }
+    const showFiles = [...files].slice(activePage * 10, activePage * 10 + 10)
     const thead = ['Name', 'Size', 'Created time', 'Action']
     return (
       <Page {...pageProps}>
         <Section heading="My Files" {...this.props}>
-          <div className="table-responsive">
-            <table className="table table-hover">
-              <thead className="thead-light">
-                <tr>
-                  <th>
-                    <input type="checkbox" id="checkall" />
-                  </th>
-                  {thead.map((th, index) => (
-                    <th key={index}>{th}</th>
-                  ))}
-                </tr>
-              </thead>
-              <tbody>
-                {files.length ? (
-                  files.map(({ id, title, createdDate, fileSize }) => (
-                    <tr key={id}>
-                      <th>
-                        <input type="checkbox" id={id} />
-                      </th>
-                      <td>{title}</td>
-                      <td>{fileSize ? formatBytes(fileSize) : '-'}</td>
-                      <td>{moment(Date(createdDate)).format('DD-MM-YYYY')}</td>
-                      <td>
-                        <button
-                          type="button"
-                          className="btn btn-danger btn-sm"
-                          onClick={() => this.handleDelete(id)}
-                        >
-                          Delete
-                        </button>
-                      </td>
-                    </tr>
-                  ))
-                ) : (
+          {isLoading ? (
+            <Loading />
+          ) : (
+            <div className="table-responsive">
+              <table className="table table-hover">
+                <thead className="thead-light">
                   <tr>
-                    <td colSpan="4">There is no files</td>
+                    <th>
+                      <InputCheckbox
+                        checked={checkedAll}
+                        onChange={this.handleCheckBox}
+                      />
+                    </th>
+                    {thead.map((th, index) => (
+                      <th key={index}>{th}</th>
+                    ))}
                   </tr>
-                )}
-              </tbody>
-            </table>
-          </div>
+                </thead>
+                <tbody>
+                  {files.length ? (
+                    showFiles.map(
+                      ({ id, title, createdDate, fileSize }, index) => (
+                        <tr key={id}>
+                          <th>
+                            <InputCheckbox
+                              checked={checked[index]}
+                              onChange={() => this.handleCheckBox(index)}
+                            />
+                          </th>
+                          <td>
+                            <a
+                              href={URL + '/d/' + id}
+                              target="_blank"
+                              rel="noopener noreferrer"
+                            >
+                              {title}
+                            </a>
+                          </td>
+                          <td>{fileSize ? formatBytes(fileSize) : '-'}</td>
+                          <td>
+                            {moment(Date(createdDate)).format('DD-MM-YYYY')}
+                          </td>
+                          <td>
+                            <div className="actions">
+                              <a
+                                role="button"
+                                tabIndex="0"
+                                onClick={() => null}
+                                style={{
+                                  marginRight: '1rem'
+                                }}
+                              >
+                                <span>
+                                  <FaRegEdit />
+                                </span>
+                              </a>
+                              <a
+                                role="button"
+                                tabIndex="0"
+                                onClick={() => this.handleDelete(id)}
+                              >
+                                <span
+                                  role="button"
+                                  tabIndex="0"
+                                  onClick={() => this.handleDelete(id)}
+                                >
+                                  <FaTrashAlt />
+                                </span>
+                              </a>
+                            </div>
+                          </td>
+                        </tr>
+                      )
+                    )
+                  ) : (
+                    <tr>
+                      <td colSpan="4">There is no files</td>
+                    </tr>
+                  )}
+                </tbody>
+              </table>
+            </div>
+          )}
+          {!isLoading && (
+            <div style={{ width: '100%' }}>
+              <div className="row">
+                <div className="col">
+                  <button
+                    className="btn btn-secondary btn-sm"
+                    onClick={this.handleShowEmbed}
+                  >
+                    GET LINK
+                  </button>
+                </div>
+                <nav aria-label="Page navigation example">
+                  <ReactPaginate
+                    previousLabel="previous"
+                    nextLabel="next"
+                    breakLabel={<a href="">...</a>}
+                    breakClassName="break-me"
+                    pageCount={Math.ceil(files.length / 10)}
+                    marginPagesDisplayed={2}
+                    pageRangeDisplayed={5}
+                    onPageChange={this.handlePageChange}
+                    containerClassName="pagination"
+                    activeClassName="active"
+                    pageLinkClassName="page-link"
+                    pageClassName="page-item"
+                    nextClassName="page-item"
+                    previousClassName="page-item"
+                    previousLinkClassName="page-link"
+                    nextLinkClassName="page-link"
+                  />
+                </nav>
+              </div>
+              {showEmbed && <Embed asPath={asPath} filename={filename} />}
+            </div>
+          )}
         </Section>
       </Page>
     )

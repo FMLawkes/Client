@@ -5,31 +5,44 @@ class Embed extends Component {
   constructor(props) {
     super(props)
     this.state = {
-      link: ''
+      link: []
     }
   }
 
   componentDidMount() {
     const { asPath } = this.props
-    const url = URL + asPath
+    const link = asPath.map(e => URL + e)
     this.setState({
-      link: url
+      link
     })
+  }
+
+  componentDidUpdate() {
+    const { link: oldState } = this.state
+    const { asPath } = this.props
+    if (oldState.length !== asPath.length) {
+      const newState = asPath.map(e => URL + e)
+      this.setState({
+        link: newState
+      })
+    }
   }
 
   handleClickBtn = params => {
     const { asPath, filename } = this.props
-    const url = URL + asPath
     let link
     switch (params) {
       case 'html':
-        link = `<a href="${url}" title="${filename}</a>`
+        link = asPath.map(
+          (e, idx) =>
+            `<a href="${URL + e}" title="${filename[idx]}">${filename[idx]}</a>`
+        )
         break
       case 'forum':
-        link = `[URL=${url}]${filename}[/URL]`
+        link = asPath.map((e, idx) => `[URL=${URL + e}]${filename[idx]}[/URL]`)
         break
       case 'link':
-        link = url
+        link = asPath.map(e => URL + e)
         break
     }
     this.setState({
@@ -39,11 +52,12 @@ class Embed extends Component {
 
   render() {
     const { link } = this.state
+    const value = link.join('\n')
     return (
       <div className="embed">
         <div className="nv btn-group">
           <a
-            className="btn btn-danger"
+            className="btn btn-primary btn-sm"
             role="button"
             tabIndex="0"
             onClick={e => {
@@ -54,7 +68,7 @@ class Embed extends Component {
             Download Link
           </a>
           <a
-            className="btn btn-danger"
+            className="btn btn-secondary btn-sm"
             role="button"
             tabIndex="0"
             onClick={e => {
@@ -65,7 +79,7 @@ class Embed extends Component {
             HTML Code
           </a>
           <a
-            className="btn btn-danger"
+            className="btn btn-warning btn-sm"
             role="button"
             tabIndex="0"
             onClick={e => {
@@ -81,16 +95,26 @@ class Embed extends Component {
           className="form-control"
           rows="3"
           id="links"
-          value={link}
+          value={value}
         />
         <br />
         <style jsx>{`
           .embed {
             margin: 2rem 0;
-            width: fit-content;
+            width: 100%;
           }
           .nv {
             margin-top: 2rem;
+          }
+          textarea {
+            border: none;
+            margin-top: 0.5rem;
+            font-size: 0.875rem;
+            width: 100%;
+          }
+          .form-control:disabled,
+          .form-control[readonly] {
+            opacity: 1;
           }
         `}</style>
       </div>

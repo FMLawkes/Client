@@ -11,6 +11,12 @@ app
   .then(() => {
     const server = express()
 
+    server.get('/d/:id', (req, res) => {
+      const actualPage = '/download-drive'
+      const queryParams = { id: req.params.id }
+      app.render(req, res, actualPage, queryParams)
+    })
+
     server.get('/files', (req, res) => {
       handle(req, res)
     })

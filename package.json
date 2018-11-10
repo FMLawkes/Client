@@ -12,6 +12,7 @@
   },
   "dependencies": {
     "@zeit/next-bundle-analyzer": "^0.1.2",
+    "@zeit/next-css": "^1.0.1",
     "apollo-cache-inmemory": "^1.2.10",
     "apollo-client": "^2.4.2",
     "apollo-link": "^1.2.3",
@@ -35,6 +36,8 @@
     "react-apollo": "^2.2.1",
     "react-dom": "^16.5.2",
     "react-icons": "^3.2.2",
+    "react-loading": "^2.0.3",
+    "react-paginate": "^5.3.1",
     "sweetalert": "^2.1.2"
   },
   "devDependencies": {

@@ -15,6 +15,7 @@ const Section = ({ heading, children, router, download = false }) => {
           align-items: ${isHomePage || download ? 'center' : 'flex-start'};
           flex-direction: column;
           margin-bottom: 2rem;
+          width: 100%;
         }
       `}</style>
     </section>
