@@ -18,6 +18,7 @@ class Download extends Component {
     super(props)
     this.state = {
       id: '',
+      filename: '',
       loadingDDL: false,
       errorDDL: false,
       asPath: '',
@@ -113,8 +114,7 @@ class Download extends Component {
   }
 
   render() {
-    const { id, loadingDDL, errorDDL, asPath } = this.state
-    console.log(id)
+    const { id, loadingDDL, errorDDL, asPath, filename } = this.state
     const {
       email,
       isLogin,
@@ -152,7 +152,7 @@ class Download extends Component {
     if (loadingDDL) handleTextButton = 'Processing'
     else if (errorDDL) handleTextButton = 'Failed'
     const pageProps = {
-      title: 'Download',
+      title: 'Download ' + id,
       isLogin,
       doLogin,
       doLogout,
@@ -165,10 +165,6 @@ class Download extends Component {
         {id !== '' ? (
           <Query query={VIDEO_QUERY} variables={{ shortUrl: id }}>
             {({ loading, error, data }) => {
-              console.log('id ==>', id)
-              console.log('data ==>', data)
-              console.log('loading ==>', loading)
-              console.log('error ===>', error)
               if (loading)
                 return (
                   <Section heading={`Loading`} {...this.props} download>
@@ -190,7 +186,7 @@ class Download extends Component {
                 const { video } = fs3ByShortUrl
                 return (
                   <Section
-                    heading={`Download ${video.filename}`}
+                    heading={`Download ${filename}`}
                     {...this.props}
                     download
                   >

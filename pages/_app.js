@@ -5,14 +5,33 @@ import { InMemoryCache } from 'apollo-cache-inmemory'
 import { ApolloClient } from 'apollo-client'
 import { getDataFromTree, ApolloProvider } from 'react-apollo'
 import App, { Container } from 'next/app'
+import NextSeo from 'next-seo'
 import { HttpLink } from 'apollo-link-http'
 import Head from 'next/head'
 import loadScript from 'load-script'
+import axios from 'axios'
 
 import api from '../credentials/api'
 
 const GOOGLE_SDK_URL = 'https://apis.google.com/js/api.js'
 let scriptLoadingStarted = false
+
+const DEFAULT_SEO = {
+  title: 'Anifiles',
+  description: 'Easy Share files',
+  openGraph: {
+    type: 'website',
+    locale: 'en_IE',
+    url: 'https://fs3.anifiles.org',
+    title: 'Anifiles',
+    description: 'Share file made easy for Anifiles',
+    site_name: 'Anifiles'
+  },
+  twitter: {
+    handle: '@fmlawkers',
+    cardType: 'summary_large_image'
+  }
+}
 
 const createApolloClient = () =>
   new ApolloClient({
@@ -33,7 +52,10 @@ class Main extends App {
       email: '',
       name: '',
       image: '',
-      isLogin: false
+      total: 0,
+      used: 0,
+      isLogin: false,
+      isRegister: false
     }
   }
 
@@ -78,24 +100,14 @@ class Main extends App {
     this.setState({
       isLogin: isSignedIn
     })
-    if (isSignedIn) {
-      const profile = gapi.auth2
-        .getAuthInstance()
-        .currentUser.get()
-        .getBasicProfile()
-      const name = profile.getName()
-      const image = profile.getImageUrl()
-      const email = profile.getEmail()
-      this.setState({
-        email,
-        image,
-        name
-      })
-    }
+    if (isSignedIn) this.getAbout()
   }
 
   handleAuthClick = () => {
     gapi.auth2.getAuthInstance().signIn()
+    this.setState({
+      isRegister: true
+    })
   }
 
   handleLogout = () => {
@@ -117,6 +129,40 @@ class Main extends App {
             image: ''
           })
         })
+  }
+
+  getAbout = async () => {
+    const {
+      result: {
+        user: {
+          displayName: name,
+          emailAddress: email,
+          picture: { url: image }
+        },
+        quotaBytesTotal: total,
+        quotaBytesUsed: used
+      }
+    } = await gapi.client.drive.about.get()
+    this.state.isRegister &&
+      (await axios.get('https://api.anifiles.org/reg', {
+        params: {
+          q: email
+        }
+      }))
+    this.setState({
+      email,
+      name,
+      image,
+      total,
+      used,
+      isRegister: false
+    })
+  }
+
+  handleRegister = () => {
+    this.setState({
+      isRegister: true
+    })
   }
 
   static async getInitialProps({ ctx, router, Component }) {
@@ -151,7 +197,17 @@ class Main extends App {
     this.props.apolloClient || createApolloClient(this.props.apolloCache)
 
   render() {
-    const { Component, pageProps } = this.props
+    const {
+      Component,
+      pageProps,
+      router: {
+        query: { title }
+      }
+    } = this.props
+    if (title) {
+      DEFAULT_SEO.title = title
+      DEFAULT_SEO.openGraph.title = title
+    }
     const { isLogin, email, name, image } = this.state
     const hocProps = {
       ...pageProps,
@@ -160,10 +216,12 @@ class Main extends App {
       name,
       image,
       doLogin: this.handleAuthClick,
-      doLogout: this.handleLogout
+      doLogout: this.handleLogout,
+      doRegister: this.handleRegister
     }
     return (
       <Container>
+        <NextSeo config={DEFAULT_SEO} />
         <ApolloProvider client={this.apolloClient}>
           <Component {...hocProps} />
         </ApolloProvider>

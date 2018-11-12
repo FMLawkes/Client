@@ -31,6 +31,7 @@ const Navbar = ({ router, doLogin, doLogout, isLogin, name, image }) => {
         url: uploadURL
       }
     )
+
   return (
     <nav className="navbar navbar-expand-lg navbar-light container">
       <Link href="/">
@@ -78,7 +79,7 @@ const Navbar = ({ router, doLogin, doLogout, isLogin, name, image }) => {
                 onClick={doLogout}
                 className="btn btn-danger"
               >
-                Logout
+                Login
               </button>
             </Fragment>
           ) : (

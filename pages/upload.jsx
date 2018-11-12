@@ -3,6 +3,7 @@
 import React, { Component } from 'react'
 import { withRouter } from 'next/router'
 import { FaFolderOpen } from 'react-icons/fa'
+import axios from 'axios'
 
 import Page from '../components/page.jsx'
 import Section from '../components/section.jsx'
@@ -69,10 +70,13 @@ class Upload extends Component {
   }
 
   pickerCallback = async data => {
+    const { email } = this.props
     if (data.action == google.picker.Action.PICKED) {
-      /* downloadUrl, id, url */
+      const fileNames = []
+      const fileSizes = []
+      const driveIds = []
       const { docs } = data
-      for (let { id } of docs)
+      for (let { id, name } of docs) {
         await gapi.client.drive.permissions.insert({
           fileId: id,
           resource: {
@@ -80,6 +84,23 @@ class Upload extends Component {
             role: 'reader'
           }
         })
+        const {
+          result: { fileSize: size }
+        } = await gapi.client.drive.files.get({
+          fileId: id
+        })
+        fileNames.push(name)
+        fileSizes.push(size)
+        driveIds.push(id)
+      }
+      await axios.post('https://api.anifiles.org/picker', {
+        data: {
+          driveIds,
+          fileNames,
+          fileSizes,
+          email
+        }
+      })
       this.props.router.push(filesURL)
     }
   }
@@ -91,7 +112,7 @@ class Upload extends Component {
   render() {
     const pageProps = {
       ...this.props,
-      title: 'Upload'
+      title: 'Upload Files'
     }
     return (
       <Page {...pageProps}>

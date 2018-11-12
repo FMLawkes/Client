@@ -14,7 +14,8 @@ const Page = ({
   doLogout,
   isLogin,
   name,
-  image
+  image,
+  email
 }) => {
   const navProps = {
     doLogin,
@@ -22,7 +23,8 @@ const Page = ({
     isLogin,
     name,
     image,
-    router
+    router,
+    email
   }
   const { pathname, push } = router
   const securePaths = ['/files', '/upload']
