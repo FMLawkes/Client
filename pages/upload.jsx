@@ -9,7 +9,7 @@ import Page from '../components/page.jsx'
 import Section from '../components/section.jsx'
 
 import api from '../credentials/api'
-import { filesURL } from '../configs/route-paths'
+// import { filesURL } from '../configs/route-paths'
 
 class Upload extends Component {
   constructor(props) {
@@ -101,7 +101,7 @@ class Upload extends Component {
           email
         }
       })
-      this.props.router.push(filesURL)
+      // this.props.router.push(filesURL)
     }
   }
 

@@ -1,7 +1,9 @@
 /* global gapi */
-import React, { Component } from 'react'
+import React, { Component, Fragment } from 'react'
+import { Mutation, Query } from 'react-apollo'
 import { withRouter } from 'next/router'
 import { FaTrashAlt, FaRegEdit } from 'react-icons/fa'
+import gql from 'graphql-tag'
 import moment from 'moment'
 import loadScript from 'load-script'
 import ReactPaginate from 'react-paginate'
@@ -9,7 +11,6 @@ import ReactPaginate from 'react-paginate'
 import Page from '../components/page.jsx'
 import Section from '../components/section.jsx'
 import Loading from '../components/loading.jsx'
-import InputCheckbox from '../components/input-checkbox.jsx'
 import Embed from '../components/embed.jsx'
 import Modal from '../components/modal.jsx'
 import formatBytes from '../helpers'
@@ -25,8 +26,9 @@ class Files extends Component {
     this.state = {
       files: [],
       isLoading: false,
-      checked: [],
-      checkedAll: false,
+      checkBox: {
+        all: false
+      },
       showEmbed: false,
       showModal: false,
       selectedFile: {
@@ -117,11 +119,8 @@ class Files extends Component {
       })
       if (folders.length) {
         const files = await this.retrievePageOfFiles([], folders)
-        const checked = []
-        for (let i in files) checked.push(false) // eslint-disable-line
         this.setState({
           files,
-          checked,
           isLoading: false
         })
       }
@@ -147,23 +146,28 @@ class Files extends Component {
     return null
   }
 
-  handleCheckBox = idx => {
-    const { checked, checkedAll } = this.state
-    let temp = [...checked]
-    if (idx >= 0)
-      temp = checked.map((e, index) => {
-        if (index === idx) return !e
-        return e
+  handleCheckBox = (event, videos = []) => {
+    const {
+      target: { checked, name }
+    } = event
+    if (name === 'all' && videos.length) {
+      const obj = {}
+      videos.forEach(({ uuid }) => {
+        obj[uuid] = checked
       })
-    else {
-      temp = checked.map(e => (e = !e))
       this.setState({
-        checkedAll: !checkedAll
+        checkBox: {
+          [name]: checked,
+          ...obj
+        }
       })
-    }
-    this.setState({
-      checked: temp
-    })
+    } else
+      this.setState({
+        checkBox: {
+          ...this.state.checkBox,
+          [name]: checked
+        }
+      })
   }
 
   handleShowEmbed = () => {
@@ -260,10 +264,6 @@ class Files extends Component {
 
   render() {
     const {
-      files,
-      isLoading,
-      checked,
-      checkedAll,
       showEmbed,
       filename,
       asPath,
@@ -271,13 +271,14 @@ class Files extends Component {
       showModal,
       selectedFile
     } = this.state
+    const { email, doLogout } = this.props
     moment('14-10-2012', 'DD-MM-YYYY', 'id', true)
     const pageProps = {
       ...this.props,
       title: 'My Files'
     }
-    const showFiles = [...files].slice(activePage * 10, activePage * 10 + 10)
-    const thead = ['Name', 'Size', 'Created time', 'Action']
+    // const showFiles = [...files].slice(activePage * 10, activePage * 10 + 10)
+    const thead = ['Name', 'Size', 'Visits', 'Created time', 'Action']
     const modalProps = {
       showModal,
       filename: selectedFile.title,
@@ -285,10 +286,169 @@ class Files extends Component {
       hideModal: this.handleModal,
       saveChange: this.handleEditFile
     }
+    const USERINFO_QUERY = gql`
+      query findAniUserById($email: String) {
+        findAniUserById(email: $email) {
+          _id
+          email
+          videos {
+            _id
+            fileName
+            fileSize
+            uuid
+            driveId
+            visits
+            createdAt
+          }
+        }
+      }
+    `
     return (
       <Page {...pageProps}>
         <Section heading="My Files" {...this.props}>
-          {isLoading ? (
+          <Query query={USERINFO_QUERY} variables={{ email }}>
+            {({ loading, error, data }) => {
+              const { findAniUserById } = data
+              if (loading) return <Loading />
+              else if (error) return <Loading />
+              else if (!findAniUserById) doLogout()
+              const { videos, _id: userId } = findAniUserById
+              return (
+                <Fragment>
+                  <div className="table-responsive">
+                    <table className="table table-hover">
+                      <thead className="thead-light">
+                        <tr>
+                          <th>
+                            <input
+                              type="checkbox"
+                              checked={!!this.state.checkBox.all}
+                              onChange={e => this.handleCheckBox(e, videos)}
+                              name="all"
+                            />
+                          </th>
+                          {thead.map((th, index) => (
+                            <th key={index}>{th}</th>
+                          ))}
+                        </tr>
+                      </thead>
+                      <tbody>
+                        {!videos.length ? (
+                          <tr>
+                            <td colSpan="4">There is no files</td>
+                          </tr>
+                        ) : (
+                          [...videos]
+                            .slice(activePage * 10, activePage * 10 + 10)
+                            .map(
+                              (
+                                {
+                                  _id,
+                                  fileName,
+                                  fileSize,
+                                  uuid,
+                                  driveId,
+                                  visits,
+                                  createdAt
+                                },
+                                index
+                              ) => (
+                                <tr key={index}>
+                                  <td>
+                                    <input
+                                      type="checkbox"
+                                      checked={!!this.state.checkBox[uuid]}
+                                      onChange={this.handleCheckBox}
+                                      name={uuid}
+                                    />
+                                  </td>
+                                  <td>{fileName}</td>
+                                  <td>
+                                    {fileSize ? formatBytes(fileSize) : '-'}
+                                  </td>
+                                  <td>{visits}</td>
+                                  <td>
+                                    {moment(Date(createdAt)).format(
+                                      'DD-MM-YYYY'
+                                    )}
+                                  </td>
+                                  <td>
+                                    <div className="actions">
+                                      <a
+                                        role="button"
+                                        tabIndex="0"
+                                        // onClick={() => this.handleFile(id, title)}
+                                        style={{
+                                          marginRight: '1rem'
+                                        }}
+                                      >
+                                        <span>
+                                          <FaRegEdit />
+                                        </span>
+                                      </a>
+                                      <a
+                                        role="button"
+                                        tabIndex="0"
+                                        onClick={() =>
+                                          this.handleDelete(_id, userId)
+                                        }
+                                      >
+                                        <span
+                                          role="button"
+                                          tabIndex="0"
+                                          // onClick={() => this.handleDelete(id)}
+                                        >
+                                          <FaTrashAlt />
+                                        </span>
+                                      </a>
+                                    </div>
+                                  </td>
+                                </tr>
+                              )
+                            )
+                        )}
+                      </tbody>
+                    </table>
+                  </div>
+                  <div style={{ width: '100%' }}>
+                    <div className="row">
+                      <div className="col">
+                        <button
+                          className="btn btn-secondary btn-sm"
+                          onClick={this.handleShowEmbed}
+                        >
+                          GET LINK
+                        </button>
+                      </div>
+                      <nav aria-label="Page navigation example">
+                        <ReactPaginate
+                          previousLabel="previous"
+                          nextLabel="next"
+                          breakLabel={<a href="">...</a>}
+                          breakClassName="break-me"
+                          pageCount={Math.ceil(videos.length / 10)}
+                          marginPagesDisplayed={2}
+                          pageRangeDisplayed={5}
+                          onPageChange={this.handlePageChange}
+                          containerClassName="pagination"
+                          activeClassName="active"
+                          pageLinkClassName="page-link"
+                          pageClassName="page-item"
+                          nextClassName="page-item"
+                          previousClassName="page-item"
+                          previousLinkClassName="page-link"
+                          nextLinkClassName="page-link"
+                        />
+                      </nav>
+                    </div>
+                    {showEmbed && <Embed asPath={asPath} filename={filename} />}
+                    {showModal && <Modal {...modalProps} />}
+                  </div>
+                </Fragment>
+              )
+            }}
+          </Query>
+          {/* {isLoading ? (
             <Loading />
           ) : (
             <div className="table-responsive">
@@ -410,7 +570,7 @@ class Files extends Component {
               {showEmbed && <Embed asPath={asPath} filename={filename} />}
               {showModal && <Modal {...modalProps} />}
             </div>
-          )}
+          )} */}
         </Section>
       </Page>
     )
