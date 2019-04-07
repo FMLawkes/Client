@@ -1,6 +1,6 @@
 /* global gapi */
 import React, { Component, Fragment } from 'react'
-import { Mutation, Query } from 'react-apollo'
+import { /* Mutation,  */ Query } from 'react-apollo'
 import { withRouter } from 'next/router'
 import { FaTrashAlt, FaRegEdit } from 'react-icons/fa'
 import gql from 'graphql-tag'
@@ -132,7 +132,7 @@ class Files extends Component {
     }
   }
 
-  handleDelete = async fileId => {
+  handleDelete = async (fileId /* , userId */) => {
     const { files } = this.state
     if (fileId) {
       await gapi.client.drive.files.delete({
@@ -346,8 +346,7 @@ class Files extends Component {
                                   _id,
                                   fileName,
                                   fileSize,
-                                  uuid,
-                                  driveId,
+                                  uuid, // driveId,
                                   visits,
                                   createdAt
                                 },
@@ -448,129 +447,6 @@ class Files extends Component {
               )
             }}
           </Query>
-          {/* {isLoading ? (
-            <Loading />
-          ) : (
-            <div className="table-responsive">
-              <table className="table table-hover">
-                <thead className="thead-light">
-                  <tr>
-                    <th>
-                      <InputCheckbox
-                        checked={checkedAll}
-                        onChange={this.handleCheckBox}
-                      />
-                    </th>
-                    {thead.map((th, index) => (
-                      <th key={index}>{th}</th>
-                    ))}
-                  </tr>
-                </thead>
-                <tbody>
-                  {files.length ? (
-                    showFiles.map(
-                      (
-                        { id, title, createdDate, fileSize, webContentLink },
-                        index
-                      ) => (
-                        <tr key={id}>
-                          <th>
-                            <InputCheckbox
-                              checked={checked[index]}
-                              onChange={() => this.handleCheckBox(index)}
-                            />
-                          </th>
-                          <td>
-                            <a
-                              // href={URL + '/d/' + id}
-                              href={webContentLink}
-                              target="_blank"
-                              rel="noopener noreferrer"
-                            >
-                              {title}
-                            </a>
-                          </td>
-                          <td>{fileSize ? formatBytes(fileSize) : '-'}</td>
-                          <td>
-                            {moment(Date(createdDate)).format('DD-MM-YYYY')}
-                          </td>
-                          <td>
-                            <div className="actions">
-                              <a
-                                role="button"
-                                tabIndex="0"
-                                onClick={() => this.handleFile(id, title)}
-                                style={{
-                                  marginRight: '1rem'
-                                }}
-                              >
-                                <span>
-                                  <FaRegEdit />
-                                </span>
-                              </a>
-                              <a
-                                role="button"
-                                tabIndex="0"
-                                onClick={() => this.handleDelete(id)}
-                              >
-                                <span
-                                  role="button"
-                                  tabIndex="0"
-                                  onClick={() => this.handleDelete(id)}
-                                >
-                                  <FaTrashAlt />
-                                </span>
-                              </a>
-                            </div>
-                          </td>
-                        </tr>
-                      )
-                    )
-                  ) : (
-                    <tr>
-                      <td colSpan="4">There is no files</td>
-                    </tr>
-                  )}
-                </tbody>
-              </table>
-            </div>
-          )}
-          {!isLoading && (
-            <div style={{ width: '100%' }}>
-              <div className="row">
-                <div className="col">
-                  <button
-                    className="btn btn-secondary btn-sm"
-                    onClick={this.handleShowEmbed}
-                  >
-                    GET LINK
-                  </button>
-                </div>
-                <nav aria-label="Page navigation example">
-                  <ReactPaginate
-                    previousLabel="previous"
-                    nextLabel="next"
-                    breakLabel={<a href="">...</a>}
-                    breakClassName="break-me"
-                    pageCount={Math.ceil(files.length / 10)}
-                    marginPagesDisplayed={2}
-                    pageRangeDisplayed={5}
-                    onPageChange={this.handlePageChange}
-                    containerClassName="pagination"
-                    activeClassName="active"
-                    pageLinkClassName="page-link"
-                    pageClassName="page-item"
-                    nextClassName="page-item"
-                    previousClassName="page-item"
-                    previousLinkClassName="page-link"
-                    nextLinkClassName="page-link"
-                  />
-                </nav>
-              </div>
-              {showEmbed && <Embed asPath={asPath} filename={filename} />}
-              {showModal && <Modal {...modalProps} />}
-            </div>
-          )} */}
         </Section>
       </Page>
     )
